@@ -1,4 +1,4 @@
-<p align="center"><a href="#readme"><img src="https://gh.kaos.st/artefactor.png" width="400px" /></a></p>
+<p align="center"><a href="#readme"><img src="https://gh.kaos.st/artefactor.png" /></a></p>
 
 <p align="center">
   <a href="https://kaos.sh/w/artefactor/ci"><img src="https://kaos.sh/w/artefactor/ci.svg" alt="GitHub Actions CI Status" /></a>
