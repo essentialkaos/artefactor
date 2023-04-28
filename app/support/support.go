@@ -17,28 +17,17 @@ import (
 	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/hash"
 	"github.com/essentialkaos/ek/v12/strutil"
+	"github.com/essentialkaos/ek/v12/system"
+	"github.com/essentialkaos/ek/v12/system/container"
 
 	"github.com/essentialkaos/depsy"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// Pkg contains basic package info
-type Pkg struct {
-	Name    string
-	Version string
-}
-
-// Pkgs is slice with packages
-type Pkgs []Pkg
-
-// ////////////////////////////////////////////////////////////////////////////////// //
-
 // Print prints verbose info about application, system, dependencies and
 // important environment
 func Print(app, ver, gitRev string, gomod []byte) {
-	pkgs := collectEnvInfo()
-
 	fmtutil.SeparatorTitleColorTag = "{s-}"
 	fmtutil.SeparatorFullscreen = false
 	fmtutil.SeparatorColorTag = "{s-}"
@@ -46,7 +35,6 @@ func Print(app, ver, gitRev string, gomod []byte) {
 
 	showApplicationInfo(app, ver, gitRev)
 	showOSInfo()
-	showEnvInfo(pkgs)
 	showDepsInfo(gomod)
 
 	fmtutil.Separator(false)
@@ -86,6 +74,53 @@ func showApplicationInfo(app, ver, gitRev string) {
 			printInfo(7, "Bin SHA", binSHA)
 		}
 	}
+}
+
+// showOSInfo shows verbose information about system
+func showOSInfo() {
+	osInfo, err := system.GetOSInfo()
+
+	if err == nil {
+		fmtutil.Separator(false, "OS INFO")
+
+		printInfo(12, "Name", osInfo.Name)
+		printInfo(12, "Pretty Name", osInfo.PrettyName)
+		printInfo(12, "Version", osInfo.VersionID)
+		printInfo(12, "ID", osInfo.ID)
+		printInfo(12, "ID Like", osInfo.IDLike)
+		printInfo(12, "Version ID", osInfo.VersionID)
+		printInfo(12, "Version Code", osInfo.VersionCodename)
+		printInfo(12, "CPE", osInfo.CPEName)
+	}
+
+	systemInfo, err := system.GetSystemInfo()
+
+	if err != nil {
+		return
+	} else {
+		if osInfo == nil {
+			fmtutil.Separator(false, "SYSTEM INFO")
+			printInfo(12, "Name", systemInfo.OS)
+		}
+	}
+
+	printInfo(12, "Arch", systemInfo.Arch)
+	printInfo(12, "Kernel", systemInfo.Kernel)
+
+	containerEngine := "No"
+
+	switch container.GetEngine() {
+	case container.DOCKER:
+		containerEngine = "Yes (Docker)"
+	case container.PODMAN:
+		containerEngine = "Yes (Podman)"
+	case container.LXC:
+		containerEngine = "Yes (LXC)"
+	}
+
+	fmtc.NewLine()
+
+	printInfo(12, "Container", containerEngine)
 }
 
 // showDepsInfo shows information about all dependencies
@@ -131,16 +166,3 @@ func printInfo(size int, name, value string) {
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
-
-// getMaxSize returns max package name size
-func (p Pkgs) getMaxSize() int {
-	size := 0
-
-	for _, pkg := range p {
-		if len(pkg.Name) > size {
-			size = len(pkg.Name)
-		}
-	}
-
-	return size
-}
