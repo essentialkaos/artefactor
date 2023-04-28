@@ -46,28 +46,6 @@ jobs:
       - name: Run tests
         run: make all
 
-  Perfecto:
-    name: Perfecto
-    runs-on: ubuntu-latest
-
-    needs: Go
-
-    steps:
-      - name: Code checkout
-        uses: actions/checkout@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check specs with Perfecto
-        uses: essentialkaos/perfecto-action@v2
-        with:
-          files: common/artefactor.spec
-
   Typos:
     name: Typos
     runs-on: ubuntu-latest
