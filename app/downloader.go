@@ -1,0 +1,242 @@
+package app
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+//                                                                                    //
+//                         Copyright (c) 2023 ESSENTIAL KAOS                          //
+//      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
+//                                                                                    //
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+
+	"github.com/essentialkaos/ek/v12/fmtc"
+	"github.com/essentialkaos/ek/v12/fsutil"
+	"github.com/essentialkaos/ek/v12/path"
+	"github.com/essentialkaos/ek/v12/req"
+	"github.com/essentialkaos/ek/v12/spinner"
+
+	"github.com/essentialkaos/npck"
+)
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+// downloadArtefacts downloads artefacts from GitHub if required
+func downloadArtefacts(artefacts Artefacts, dataDir string) error {
+	var isFailed bool
+
+	fmtc.NewLine()
+
+	for _, artefact := range artefacts {
+		err := downloadArtefact(artefact, dataDir)
+
+		if err != nil {
+			fmtc.Printf("   {r}%v{!}\n", err)
+			isFailed = true
+		}
+
+		temp.Clean()
+		fmtc.NewLine()
+	}
+
+	if isFailed {
+		return fmt.Errorf("Some artefacts can not be downloaded from GitHub")
+	}
+
+	return nil
+}
+
+func downloadArtefact(artefact *Artefact, dataDir string) error {
+	fmtc.Printf(
+		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}\n",
+		artefact.Name, artefact.Repo,
+	)
+
+	spinner.Show("Checking the latest version on GitHub")
+	version, err := getLatestRelease(artefact.Repo)
+	spinner.Done(err == nil)
+
+	if err != nil {
+		return err
+	}
+
+	fmtc.Printf("   Found version: {g}%s{!}\n", version)
+	releaseDir := path.Join(dataDir, artefact.Name, version)
+	outputFile := path.Join(releaseDir, artefact.Output)
+
+	if fsutil.IsExist(outputFile) {
+		fmtc.Println("   {g}The latest version already downloaded{!}")
+		return nil
+	}
+
+	err = downloadArtefactData(artefact, version, releaseDir, outputFile)
+
+	if err != nil {
+		return err
+	}
+
+	fmtc.Println("   {g}Artefact successfully downloaded and saved to data directory{!}")
+
+	return nil
+}
+
+// downloadArtefactData downloads and stores artefact
+func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile string) error {
+	spinner.Show("Downloading binary from GitHub")
+	binFile, err := downloadArtefactFile(artefact, version)
+	spinner.Done(err == nil)
+
+	if err != nil {
+		return err
+	}
+
+	if isArchive(artefact) {
+		binFile, err = unpackArtefactArchive(artefact, binFile)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !fsutil.IsExist(outputDir) {
+		err = os.MkdirAll(outputDir, 0755)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	err = fsutil.MoveFile(binFile, outputFile, 0644)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// downloadArtefactFile downloads binary file
+func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
+	url, err := getArtefactBinaryURL(artefact, version)
+
+	if err != nil {
+		return "", err
+	}
+
+	tempFd, tempName, err := temp.MkFile(artefact.Name + getArtefactExt(artefact))
+
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := req.Request{
+		URL:         url,
+		AutoDiscard: true,
+	}.Get()
+
+	w := bufio.NewWriter(tempFd)
+	_, err = io.Copy(w, resp.Response.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	w.Flush()
+
+	return tempName, nil
+}
+
+// unpackArtefactArchive
+func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
+	spinner.Show("Unpacking data")
+
+	tmpDir, err := temp.MkDir()
+
+	if err != nil {
+		spinner.Done(false)
+		return "", err
+	}
+
+	err = npck.Unpack(file, tmpDir)
+
+	if err != nil {
+		spinner.Done(false)
+		return "", fmt.Errorf("Can't unpack data: %v", err)
+	}
+
+	spinner.Done(true)
+
+	if fsutil.CheckPerms("FRS", path.Join(tmpDir, artefact.Binary)) {
+		return path.Join(tmpDir, artefact.Binary), nil
+	}
+
+	for _, file := range fsutil.ListAllFiles(tmpDir, true) {
+		isMatch, _ := path.Match(artefact.Binary, file)
+
+		if isMatch {
+			return path.Join(tmpDir, file), nil
+		}
+	}
+
+	return "", fmt.Errorf("Can't find binary \"%s\" in unpacked data", artefact.Binary)
+}
+
+// getArtefactBinaryURL returns URL of binary file
+func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
+	if artefact.URL != "" {
+		return strings.ReplaceAll(artefact.URL, "{version}", version), nil
+	}
+
+	assets, err := getLatestReleaseAssets(artefact.Repo)
+
+	if err != nil {
+		return "", err
+	}
+
+	for _, url := range assets {
+		file := path.Base(url)
+		match, _ := path.Match(artefact.Glob, file)
+
+		if match {
+			return url, nil
+		}
+	}
+
+	return "", fmt.Errorf("Can't find binary URL")
+}
+
+// getArtefactExt returns extension for artefact file
+func getArtefactExt(artefact *Artefact) string {
+	var file string
+
+	if artefact.URL != "" {
+		file = artefact.URL
+	} else {
+		file = artefact.Glob
+	}
+
+	switch {
+	case strings.HasSuffix(file, ".tar.gz"),
+		strings.HasSuffix(file, ".tgz"):
+		return ".tar.gz"
+	case strings.HasSuffix(file, ".tar.bz2"),
+		strings.HasSuffix(file, ".tbz2"):
+		return ".tar.bz2"
+	case strings.HasSuffix(file, ".tar.xz"),
+		strings.HasSuffix(file, ".txz"):
+		return ".tar.xz"
+	case strings.HasSuffix(file, ".zip"):
+		return ".zip"
+	}
+
+	return ""
+}
+
+// isArchive returns true if given file is an archive
+func isArchive(artefact *Artefact) bool {
+	return getArtefactExt(artefact) != ""
+}

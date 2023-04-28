@@ -1,0 +1,10 @@
+################################################################################
+
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+HOME=/srv/artefactor
+
+################################################################################
+
+0 15 * * Sun root artefactor -u -s /srv/artefactor/artefacts.yml /srv/artefactor/ &> /dev/null
