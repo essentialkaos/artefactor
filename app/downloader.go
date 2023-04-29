@@ -16,9 +16,11 @@ import (
 
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fsutil"
+	"github.com/essentialkaos/ek/v12/httputil"
 	"github.com/essentialkaos/ek/v12/path"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
+	"github.com/essentialkaos/ek/v12/strutil"
 
 	"github.com/essentialkaos/npck"
 )
@@ -65,7 +67,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 	}
 
 	fmtc.Printf("   Found version: {g}%s{!}\n", version)
-	releaseDir := path.Join(dataDir, artefact.Name, version)
+	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
 	outputFile := path.Join(releaseDir, artefact.Output)
 
 	if fsutil.IsExist(outputFile) {
@@ -170,25 +172,25 @@ func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
 
 	spinner.Done(true)
 
-	if fsutil.CheckPerms("FRS", path.Join(tmpDir, artefact.Binary)) {
-		return path.Join(tmpDir, artefact.Binary), nil
+	if fsutil.CheckPerms("FRS", path.Join(tmpDir, artefact.File)) {
+		return path.Join(tmpDir, artefact.File), nil
 	}
 
 	for _, file := range fsutil.ListAllFiles(tmpDir, true) {
-		isMatch, _ := path.Match(artefact.Binary, file)
+		isMatch, _ := path.Match(artefact.File, file)
 
 		if isMatch {
 			return path.Join(tmpDir, file), nil
 		}
 	}
 
-	return "", fmt.Errorf("Can't find binary \"%s\" in unpacked data", artefact.Binary)
+	return "", fmt.Errorf("Can't find binary \"%s\" in unpacked data", artefact.File)
 }
 
 // getArtefactBinaryURL returns URL of binary file
 func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
-	if artefact.URL != "" {
-		return strings.ReplaceAll(artefact.URL, "{version}", version), nil
+	if httputil.IsURL(artefact.Source) {
+		return strings.ReplaceAll(artefact.Source, "{version}", version), nil
 	}
 
 	assets, err := getLatestReleaseAssets(artefact.Repo)
@@ -199,7 +201,7 @@ func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
 
 	for _, url := range assets {
 		file := path.Base(url)
-		match, _ := path.Match(artefact.Glob, file)
+		match, _ := path.Match(artefact.Source, file)
 
 		if match {
 			return url, nil
@@ -211,25 +213,17 @@ func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
 
 // getArtefactExt returns extension for artefact file
 func getArtefactExt(artefact *Artefact) string {
-	var file string
-
-	if artefact.URL != "" {
-		file = artefact.URL
-	} else {
-		file = artefact.Glob
-	}
-
 	switch {
-	case strings.HasSuffix(file, ".tar.gz"),
-		strings.HasSuffix(file, ".tgz"):
+	case strings.HasSuffix(artefact.Source, ".tar.gz"),
+		strings.HasSuffix(artefact.Source, ".tgz"):
 		return ".tar.gz"
-	case strings.HasSuffix(file, ".tar.bz2"),
-		strings.HasSuffix(file, ".tbz2"):
+	case strings.HasSuffix(artefact.Source, ".tar.bz2"),
+		strings.HasSuffix(artefact.Source, ".tbz2"):
 		return ".tar.bz2"
-	case strings.HasSuffix(file, ".tar.xz"),
-		strings.HasSuffix(file, ".txz"):
+	case strings.HasSuffix(artefact.Source, ".tar.xz"),
+		strings.HasSuffix(artefact.Source, ".txz"):
 		return ".tar.xz"
-	case strings.HasSuffix(file, ".zip"):
+	case strings.HasSuffix(artefact.Source, ".zip"):
 		return ".zip"
 	}
 

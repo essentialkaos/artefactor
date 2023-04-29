@@ -1,37 +1,51 @@
+--- # Basic artefacts collection
+
+- name: gosu
+  repo: tianon/gosu
+  source: "*-amd64"
+  output: "gosu-x86_64"
+
 - name: typos
   repo: crate-ci/typos
-  glob: "*-linux-musl.tar.gz"
-  binary: "typos"
+  source: "*-linux-musl.tar.gz"
+  file: "typos"
   output: "typos-x86_64"
 
 - name: shellcheck
   repo: koalaman/shellcheck
-  glob: "*.linux.x86_64.tar.xz"
-  binary: "shellcheck-*/shellcheck"
+  source: "*.linux.x86_64.tar.xz"
+  file: "shellcheck-*/shellcheck"
   output: "shellcheck-x86_64"
 
 - name: trivy
   repo: aquasecurity/trivy
-  glob: "*_Linux-32bit.rpm"
+  source: "*_Linux-32bit.rpm"
   output: "trivy-x86_64.rpm"
 
 - name: hadolint
   repo: hadolint/hadolint
-  glob: "*-Linux-x86_64"
+  source: "*-Linux-x86_64"
   output: "hadolint-x86_64"
 
 - name: grype
   repo: anchore/grype
-  glob: "*_linux_amd64.rpm"
+  source: "*_linux_amd64.rpm"
   output: "grype-x86_64.rpm"
 
 - name: dive
   repo: wagoodman/dive
-  glob: "*_linux_amd64.rpm"
+  source: "*_linux_amd64.rpm"
   output: "dive-x86_64.rpm"
 
 - name: slim
   repo: slimtoolkit/slim
-  url: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
-  binary: "dist_linux/slim"
+  source: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
+  file: "dist_linux/slim"
   output: "slim-x86_64"
+
+- name: slim-sensor
+  repo: slimtoolkit/slim
+  dir: slim
+  source: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
+  file: "dist_linux/slim-sensor"
+  output: "slim-sensor-x86_64"

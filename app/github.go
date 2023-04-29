@@ -10,9 +10,7 @@ package app
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/essentialkaos/ek/v12/cache"
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
 )
@@ -37,7 +35,7 @@ type ghAsset struct {
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // releaseCache is cache for github releases data
-var releaseCache = cache.New(time.Minute, time.Second)
+var releaseCache = map[string]*ghRelease{}
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
@@ -70,8 +68,8 @@ func getLatestReleaseAssets(repo string) ([]string, error) {
 }
 
 func getLatestReleaseInfo(repo string) (*ghRelease, error) {
-	if releaseCache.Has(repo) {
-		return releaseCache.Get(repo).(*ghRelease), nil
+	if releaseCache[repo] != nil {
+		return releaseCache[repo], nil
 	}
 
 	headers := req.Headers{
@@ -97,7 +95,7 @@ func getLatestReleaseInfo(repo string) (*ghRelease, error) {
 	err = resp.JSON(release)
 
 	if err == nil {
-		releaseCache.Set(repo, release)
+		releaseCache[repo] = release
 	}
 
 	return release, err

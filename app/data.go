@@ -12,7 +12,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/essentialkaos/ek/v12/httputil"
 	"github.com/essentialkaos/go-simpleyaml/v2"
 )
 
@@ -23,9 +22,9 @@ type Artefact struct {
 	Name   string
 	Repo   string
 	Output string
-	Glob   string
-	Binary string
-	URL    string
+	Source string
+	File   string
+	Dir    string
 
 	index int
 }
@@ -68,9 +67,9 @@ func convertArtefactsYaml(yaml *simpleyaml.Yaml) (Artefacts, error) {
 			Name:   info.Get("name").MustString(""),
 			Repo:   info.Get("repo").MustString(""),
 			Output: info.Get("output").MustString(""),
-			Glob:   info.Get("glob").MustString(""),
-			Binary: info.Get("binary").MustString(""),
-			URL:    info.Get("url").MustString(""),
+			Source: info.Get("source").MustString(""),
+			File:   info.Get("file").MustString(""),
+			Dir:    info.Get("dir").MustString(""),
 
 			index: index,
 		})
@@ -103,19 +102,18 @@ func (a *Artefact) Validate() error {
 		return fmt.Errorf("Artefact %d invalid: name can't be empty", a.index)
 	case a.Repo == "":
 		return fmt.Errorf("Artefact \"%s\" invalid: repo can't be empty", a.Name)
+	case a.Source == "":
+		return fmt.Errorf("Artefact \"%s\" invalid: source can't be empty", a.Name)
 	case a.Output == "":
 		return fmt.Errorf("Artefact \"%s\" invalid: output can't be empty", a.Name)
+	case a.Dir != "" && strings.Index(a.Dir, "/") != -1:
+		return fmt.Errorf("Artefact \"%s\" invalid: dir must not contains /", a.Name)
 	case a.Repo != "" && strings.Index(a.Repo, "/") == -1:
 		return fmt.Errorf("Artefact \"%s\" invalid: repo name is invalid", a.Name)
-	case a.URL != "" && !httputil.IsURL(a.URL):
-		return fmt.Errorf("Artefact \"%s\" invalid: URL contains invalid value", a.Name)
-	case a.URL != "" && a.Binary == "" && strings.HasSuffix(a.URL, ".tar.gz"),
-		a.URL != "" && a.Binary == "" && strings.HasSuffix(a.URL, ".tar.xz"),
-		a.URL != "" && a.Binary == "" && strings.HasSuffix(a.URL, ".zip"),
-		a.URL != "" && a.Binary == "" && strings.HasSuffix(a.Glob, ".tar.gz"),
-		a.URL != "" && a.Binary == "" && strings.HasSuffix(a.Glob, ".tar.xz"),
-		a.URL != "" && a.Binary == "" && strings.HasSuffix(a.Glob, ".zip"):
-		return fmt.Errorf("Artefact \"%s\" invalid: binary name is not defined for archive file", a.Name)
+	case a.File == "" && strings.HasSuffix(a.Source, ".tar.gz"),
+		a.File == "" && strings.HasSuffix(a.Source, ".tar.xz"),
+		a.File == "" && strings.HasSuffix(a.Source, ".zip"):
+		return fmt.Errorf("Artefact \"%s\" invalid: file is not defined for archive file", a.Name)
 	}
 
 	return nil
