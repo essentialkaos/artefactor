@@ -1,0 +1,51 @@
+--- # Basic artefacts collection
+
+- name: gosu
+  repo: tianon/gosu
+  source: "*-amd64"
+  output: "gosu-x86_64"
+
+- name: typos
+  repo: crate-ci/typos
+  source: "*-linux-musl.tar.gz"
+  file: "typos"
+  output: "typos-x86_64"
+
+- name: shellcheck
+  repo: koalaman/shellcheck
+  source: "*.linux.x86_64.tar.xz"
+  file: "shellcheck-*/shellcheck"
+  output: "shellcheck-x86_64"
+
+- name: trivy
+  repo: aquasecurity/trivy
+  source: "*_Linux-32bit.rpm"
+  output: "trivy-x86_64.rpm"
+
+- name: hadolint
+  repo: hadolint/hadolint
+  source: "*-Linux-x86_64"
+  output: "hadolint-x86_64"
+
+- name: grype
+  repo: anchore/grype
+  source: "*_linux_amd64.rpm"
+  output: "grype-x86_64.rpm"
+
+- name: dive
+  repo: wagoodman/dive
+  source: "*_linux_amd64.rpm"
+  output: "dive-x86_64.rpm"
+
+- name: slim
+  repo: slimtoolkit/slim
+  source: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
+  file: "dist_linux/slim"
+  output: "slim-x86_64"
+
+- name: slim-sensor
+  repo: slimtoolkit/slim
+  dir: slim
+  source: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
+  file: "dist_linux/slim-sensor"
+  output: "slim-sensor-x86_64"
