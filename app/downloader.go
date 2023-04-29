@@ -112,7 +112,7 @@ func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile str
 		}
 	}
 
-	err = fsutil.MoveFile(binFile, outputFile, 0644)
+	err = fsutil.CopyFile(binFile, outputFile, 0644)
 
 	if err != nil {
 		return err
