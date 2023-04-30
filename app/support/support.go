@@ -97,11 +97,11 @@ func showOSInfo() {
 
 	if err != nil {
 		return
-	} else {
-		if osInfo == nil {
-			fmtutil.Separator(false, "SYSTEM INFO")
-			printInfo(12, "Name", systemInfo.OS)
-		}
+	}
+
+	if osInfo == nil {
+		fmtutil.Separator(false, "SYSTEM INFO")
+		printInfo(12, "Name", systemInfo.OS)
 	}
 
 	printInfo(12, "Arch", systemInfo.Arch)
