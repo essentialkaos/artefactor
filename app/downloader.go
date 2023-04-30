@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
+	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/fsutil"
 	"github.com/essentialkaos/ek/v12/httputil"
 	"github.com/essentialkaos/ek/v12/path"
@@ -92,7 +93,12 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 		return fmt.Errorf("Can't create link to the latest release: %v", err)
 	}
 
-	fmtc.Println("   {g}Artefact successfully downloaded and saved to data directory{!}")
+	binarySize := fsutil.GetSize(outputFile)
+
+	fmtc.Printf(
+		"   {g}Artefact successfully downloaded {s}%s{g} and saved to data directory{!}\n",
+		fmtutil.PrettySize(binarySize),
+	)
 
 	return nil
 }
