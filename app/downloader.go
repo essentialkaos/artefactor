@@ -68,6 +68,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 
 	fmtc.Printf("   Found version: {g}%s{!}\n", version)
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
+	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 	outputFile := path.Join(releaseDir, artefact.Output)
 
 	if fsutil.IsExist(outputFile) {
@@ -79,6 +80,16 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 
 	if err != nil {
 		return err
+	}
+
+	if fsutil.IsExist(latestLink) {
+		os.Remove(latestLink)
+	}
+
+	err = os.Symlink(releaseDir, latestLink)
+
+	if err != nil {
+		return fmt.Errorf("Can't create link to the latest release: %v", err)
 	}
 
 	fmtc.Println("   {g}Artefact successfully downloaded and saved to data directory{!}")
