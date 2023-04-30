@@ -9,11 +9,13 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
+	"github.com/essentialkaos/ek/v12/timeutil"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -93,12 +95,30 @@ func getLatestReleaseInfo(repo string) (*ghRelease, error) {
 		return nil, fmt.Errorf("Can't fetch GitHub data: %v", err)
 	}
 
+	if resp.Header.Get("X-Ratelimit-Remaining") == "0" {
+		resetTS, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
+		resetDate := time.Unix(resetTS, 0)
+
+		return nil, fmt.Errorf(
+			"Reached limit for requests to GitHub API (%s/%s | %s to reset)",
+			resp.Header.Get("X-Ratelimit-Used"),
+			resp.Header.Get("X-Ratelimit-Limit"),
+			timeutil.PrettyDuration(time.Until(resetDate)),
+		)
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("GitHub returned non-OK response code %d", resp.StatusCode)
+	}
+
 	release := &ghRelease{}
 	err = resp.JSON(release)
 
 	if err == nil {
 		releaseCache[repo] = release
+	} else {
+		return nil, fmt.Errorf("Can't decode response JSON: %v", err)
 	}
 
-	return release, err
+	return release, nil
 }
