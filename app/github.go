@@ -10,6 +10,7 @@ package app
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
@@ -24,8 +25,9 @@ const (
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 type ghRelease struct {
-	Version string `json:"tag_name"`
-	Assets  []*ghAsset
+	Version     string     `json:"tag_name"`
+	PublishDate time.Time  `json:"published_at"`
+	Assets      []*ghAsset `json:"assets"`
 }
 
 type ghAsset struct {
@@ -39,15 +41,15 @@ var releaseCache = map[string]*ghRelease{}
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// getLatestRelease returns the latest version of release
-func getLatestRelease(repo string) (string, error) {
+// getLatestReleaseVersion returns the latest version of release
+func getLatestReleaseVersion(repo string) (string, time.Time, error) {
 	release, err := getLatestReleaseInfo(repo)
 
 	if err != nil {
-		return "", err
+		return "", time.Time{}, err
 	}
 
-	return strings.TrimLeft(release.Version, "v"), nil
+	return strings.TrimLeft(release.Version, "v"), release.PublishDate, nil
 }
 
 // getLatestReleaseAssets returns slice with URLs from the latest release

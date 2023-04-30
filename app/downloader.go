@@ -22,6 +22,7 @@ import (
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
 	"github.com/essentialkaos/ek/v12/strutil"
+	"github.com/essentialkaos/ek/v12/timeutil"
 
 	"github.com/essentialkaos/npck"
 )
@@ -60,14 +61,18 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 	)
 
 	spinner.Show("Checking the latest version on GitHub")
-	version, err := getLatestRelease(artefact.Repo)
+	version, pubDate, err := getLatestReleaseVersion(artefact.Repo)
 	spinner.Done(err == nil)
 
 	if err != nil {
 		return err
 	}
 
-	fmtc.Printf("   Found version: {g}%s{!}\n", version)
+	fmtc.Printf(
+		"   Found version: {g}%s{!} {s-}(%s){!}\n",
+		version, timeutil.Format(pubDate, "%Y/%m/%d %H:%M"),
+	)
+
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
 	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 	outputFile := path.Join(releaseDir, artefact.Output)
