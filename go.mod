@@ -3,7 +3,7 @@ module github.com/essentialkaos/artefactor
 go 1.20
 
 require (
-	github.com/essentialkaos/depsy v1.0.0
+	github.com/essentialkaos/depsy v1.1.0
 	github.com/essentialkaos/ek/v12 v12.67.0
 	github.com/essentialkaos/go-simpleyaml/v2 v2.1.4
 	github.com/essentialkaos/npck v1.5.0
