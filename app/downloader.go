@@ -92,7 +92,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 		os.Remove(latestLink)
 	}
 
-	err = os.Symlink(releaseDir, latestLink)
+	err = os.Symlink(version, latestLink)
 
 	if err != nil {
 		return fmt.Errorf("Can't create link to the latest release: %v", err)
