@@ -17,6 +17,12 @@
   file: "shellcheck-*/shellcheck"
   output: "shellcheck-x86_64"
 
+- name: fzf
+  repo: junegunn/fzf
+  source: "*-linux_amd64.tar.gz"
+  file: "fzf"
+  output: "fzf-x86_64"
+
 - name: trivy
   repo: aquasecurity/trivy
   source: "*_Linux-32bit.rpm"
