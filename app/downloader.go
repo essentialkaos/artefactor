@@ -18,6 +18,7 @@ import (
 	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/fsutil"
 	"github.com/essentialkaos/ek/v12/httputil"
+	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/path"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
@@ -36,6 +37,10 @@ func downloadArtefacts(artefacts Artefacts, dataDir string) error {
 	fmtc.NewLine()
 
 	for _, artefact := range artefacts {
+		if options.Has(OPT_NAME) && options.GetS(OPT_NAME) != artefact.Name {
+			continue
+		}
+
 		err := downloadArtefact(artefact, dataDir)
 
 		if err != nil {
@@ -72,6 +77,8 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 		"   Found version: {g}%s{!} {s-}(%s){!}\n",
 		version, timeutil.Format(pubDate, "%Y/%m/%d %H:%M"),
 	)
+
+	artefact.ApplyVersion(version)
 
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
 	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
@@ -145,7 +152,7 @@ func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile str
 
 // downloadArtefactFile downloads binary file
 func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
-	url, err := getArtefactBinaryURL(artefact, version)
+	url, err := getArtefactBinaryURL(artefact)
 
 	if err != nil {
 		return "", err
@@ -210,9 +217,9 @@ func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
 }
 
 // getArtefactBinaryURL returns URL of binary file
-func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
+func getArtefactBinaryURL(artefact *Artefact) (string, error) {
 	if httputil.IsURL(artefact.Source) {
-		return strings.ReplaceAll(artefact.Source, "{version}", version), nil
+		return artefact.Source, nil
 	}
 
 	assets, err := getLatestReleaseAssets(artefact.Repo)

@@ -118,3 +118,14 @@ func (a *Artefact) Validate() error {
 
 	return nil
 }
+
+// ApplyVersion applies version data to artefact
+func (a *Artefact) ApplyVersion(version string) {
+	if strings.Contains(a.File, "{version}") {
+		a.File = strings.ReplaceAll(a.File, "{version}", version)
+	}
+
+	if strings.Contains(a.Source, "{version}") {
+		a.Source = strings.ReplaceAll(a.Source, "{version}", version)
+	}
+}
