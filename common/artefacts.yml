@@ -17,11 +17,29 @@
   file: "shellcheck-*/shellcheck"
   output: "shellcheck-x86_64"
 
+- name: bat
+  repo: sharkdp/bat
+  source: "*-x86_64-unknown-linux-musl.tar.gz"
+  file: "bat-v{version}-x86_64-unknown-linux-musl/bat"
+  output: "bat-x86_64"
+
+- name: duf
+  repo: muesli/duf
+  source: "*_linux_x86_64.tar.gz"
+  file: "duf"
+  output: "duf-x86_64"
+
 - name: fzf
   repo: junegunn/fzf
   source: "*-linux_amd64.tar.gz"
   file: "fzf"
   output: "fzf-x86_64"
+
+- name: ripgrep
+  repo: BurntSushi/ripgrep
+  source: "*-x86_64-unknown-linux-musl.tar.gz"
+  file: "ripgrep-{version}-x86_64-unknown-linux-musl/rg"
+  output: "rg-x86_64"
 
 - name: trivy
   repo: aquasecurity/trivy
