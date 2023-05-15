@@ -16,7 +16,7 @@
 
 ### Usage demo
 
-[![demo](https://gh.kaos.st/artefactor-001.gif)](#usage-demo)
+[![demo](https://gh.kaos.st/artefactor-020.gif)](#usage-demo)
 
 ### Installation
 
