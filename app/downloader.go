@@ -52,6 +52,8 @@ func downloadArtefacts(artefacts Artefacts, dataDir string) error {
 		fmtc.NewLine()
 	}
 
+	restorePermissions(dataDir)
+
 	if isFailed {
 		return fmt.Errorf("Some artefacts can not be downloaded from GitHub")
 	}
@@ -262,4 +264,21 @@ func getArtefactExt(artefact *Artefact) string {
 // isArchive returns true if given file is an archive
 func isArchive(artefact *Artefact) bool {
 	return getArtefactExt(artefact) != ""
+}
+
+// restorePermissions restores permissions for files and directories
+func restorePermissions(dataDir string) {
+	dirs := fsutil.ListAllDirs(dataDir, false)
+	fsutil.ListToAbsolute(dataDir, dirs)
+
+	for _, dir := range dirs {
+		os.Chmod(dir, 0755)
+	}
+
+	files := fsutil.ListAllFiles(dataDir, false)
+	fsutil.ListToAbsolute(dataDir, files)
+
+	for _, file := range files {
+		os.Chmod(file, 0644)
+	}
 }
