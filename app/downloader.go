@@ -18,6 +18,7 @@ import (
 	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/fsutil"
 	"github.com/essentialkaos/ek/v12/httputil"
+	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/path"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
@@ -36,6 +37,10 @@ func downloadArtefacts(artefacts Artefacts, dataDir string) error {
 	fmtc.NewLine()
 
 	for _, artefact := range artefacts {
+		if options.Has(OPT_NAME) && options.GetS(OPT_NAME) != artefact.Name {
+			continue
+		}
+
 		err := downloadArtefact(artefact, dataDir)
 
 		if err != nil {
@@ -46,6 +51,8 @@ func downloadArtefacts(artefacts Artefacts, dataDir string) error {
 		temp.Clean()
 		fmtc.NewLine()
 	}
+
+	restorePermissions(dataDir)
 
 	if isFailed {
 		return fmt.Errorf("Some artefacts can not be downloaded from GitHub")
@@ -73,6 +80,8 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 		version, timeutil.Format(pubDate, "%Y/%m/%d %H:%M"),
 	)
 
+	artefact.ApplyVersion(version)
+
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
 	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 	outputFile := path.Join(releaseDir, artefact.Output)
@@ -92,7 +101,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 		os.Remove(latestLink)
 	}
 
-	err = os.Symlink(releaseDir, latestLink)
+	err = os.Symlink(version, latestLink)
 
 	if err != nil {
 		return fmt.Errorf("Can't create link to the latest release: %v", err)
@@ -145,7 +154,7 @@ func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile str
 
 // downloadArtefactFile downloads binary file
 func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
-	url, err := getArtefactBinaryURL(artefact, version)
+	url, err := getArtefactBinaryURL(artefact)
 
 	if err != nil {
 		return "", err
@@ -210,9 +219,9 @@ func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
 }
 
 // getArtefactBinaryURL returns URL of binary file
-func getArtefactBinaryURL(artefact *Artefact, version string) (string, error) {
+func getArtefactBinaryURL(artefact *Artefact) (string, error) {
 	if httputil.IsURL(artefact.Source) {
-		return strings.ReplaceAll(artefact.Source, "{version}", version), nil
+		return artefact.Source, nil
 	}
 
 	assets, err := getLatestReleaseAssets(artefact.Repo)
@@ -255,4 +264,21 @@ func getArtefactExt(artefact *Artefact) string {
 // isArchive returns true if given file is an archive
 func isArchive(artefact *Artefact) bool {
 	return getArtefactExt(artefact) != ""
+}
+
+// restorePermissions restores permissions for files and directories
+func restorePermissions(dataDir string) {
+	dirs := fsutil.ListAllDirs(dataDir, false)
+	fsutil.ListToAbsolute(dataDir, dirs)
+
+	for _, dir := range dirs {
+		os.Chmod(dir, 0755)
+	}
+
+	files := fsutil.ListAllFiles(dataDir, false)
+	fsutil.ListToAbsolute(dataDir, files)
+
+	for _, file := range files {
+		os.Chmod(file, 0644)
+	}
 }

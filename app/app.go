@@ -33,7 +33,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.1.0"
+	VER  = "0.2.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -42,6 +42,7 @@ const (
 // Options
 const (
 	OPT_SOURCES  = "s:sources"
+	OPT_NAME     = "n:name"
 	OPT_TOKEN    = "t:token"
 	OPT_UNIT     = "u:unit"
 	OPT_NO_COLOR = "nc:no-color"
@@ -58,6 +59,7 @@ const (
 // optMap contains information about all supported options
 var optMap = options.Map{
 	OPT_SOURCES:  {Value: "artefacts.yml"},
+	OPT_NAME:     {},
 	OPT_TOKEN:    {},
 	OPT_UNIT:     {Type: options.BOOL},
 	OPT_NO_COLOR: {Type: options.BOOL},
@@ -70,6 +72,9 @@ var optMap = options.Map{
 }
 
 var temp *tmp.Temp
+
+var colorTagApp string
+var colorTagVer string
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
@@ -141,6 +146,13 @@ func preConfigureUI() {
 
 	if os.Getenv("NO_COLOR") != "" {
 		fmtc.DisableColors = true
+	}
+
+	switch {
+	case fmtc.Is256ColorsSupported():
+		colorTagApp, colorTagVer = "{#117}", "{#117}"
+	default:
+		colorTagApp, colorTagVer = "{c}", "{c}"
 	}
 }
 
@@ -248,6 +260,7 @@ func genUsage() *usage.Info {
 	info := usage.NewInfo("", "data-dir")
 
 	info.AddOption(OPT_SOURCES, "Path to YAML file with sources {s-}(default: artefacts.yml){!}", "file")
+	info.AddOption(OPT_NAME, "Artefact name to download", "name")
 	info.AddOption(OPT_TOKEN, "GitHub personal token", "token")
 	info.AddOption(OPT_UNIT, "Run application in unit mode {s-}(no colors and animations){!}")
 	info.AddOption(OPT_NO_COLOR, "Disable colors in output")
@@ -271,6 +284,11 @@ func genAbout(gitRev string) *usage.About {
 
 	if gitRev != "" {
 		about.Build = "git:" + gitRev
+	}
+
+	if fmtc.Is256ColorsSupported() {
+		about.AppNameColorTag = "{*}" + colorTagApp
+		about.VersionColorTag = colorTagVer
 	}
 
 	return about
