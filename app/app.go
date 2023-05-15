@@ -73,6 +73,9 @@ var optMap = options.Map{
 
 var temp *tmp.Temp
 
+var colorTagApp string
+var colorTagVer string
+
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // Run is main utility function
@@ -143,6 +146,13 @@ func preConfigureUI() {
 
 	if os.Getenv("NO_COLOR") != "" {
 		fmtc.DisableColors = true
+	}
+
+	switch {
+	case fmtc.Is256ColorsSupported():
+		colorTagApp, colorTagVer = "{#117}", "{#117}"
+	default:
+		colorTagApp, colorTagVer = "{c}", "{c}"
 	}
 }
 
@@ -274,6 +284,11 @@ func genAbout(gitRev string) *usage.About {
 
 	if gitRev != "" {
 		about.Build = "git:" + gitRev
+	}
+
+	if fmtc.Is256ColorsSupported() {
+		about.AppNameColorTag = "{*}" + colorTagApp
+		about.VersionColorTag = colorTagVer
 	}
 
 	return about
