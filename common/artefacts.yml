@@ -43,7 +43,7 @@
 
 - name: trivy
   repo: aquasecurity/trivy
-  source: "*_Linux-32bit.rpm"
+  source: "*_Linux-64bit.rpm"
   output: "trivy-x86_64.rpm"
 
 - name: hadolint
