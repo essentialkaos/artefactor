@@ -11,6 +11,12 @@
   file: "typos"
   output: "typos-x86_64"
 
+- name: golangci-lint
+  repo: golangci/golangci-lint
+  source: "*-linux-amd64.tar.gz"
+  file: "golangci-lint-*/golangci-lint"
+  output: "golangci-lint-x86_64"
+
 - name: shellcheck
   repo: koalaman/shellcheck
   source: "*.linux.x86_64.tar.xz"
