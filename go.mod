@@ -13,6 +13,6 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
