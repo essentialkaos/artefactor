@@ -22,7 +22,7 @@
 
 #### From source
 
-To build the `artefactor` from scratch, make sure you have a working Go 1.19+ workspace (_[instructions](https://go.dev/doc/install)_), then:
+To build the `artefactor` from scratch, make sure you have a working Go 1.20+ workspace (_[instructions](https://go.dev/doc/install)_), then:
 
 ```bash
 go install github.com/essentialkaos/artefactor@latest
@@ -43,7 +43,9 @@ Usage: artefactor {options} data-dir
 
 Options
 
+  --list, -L            List downloaded artefacts in data directory
   --sources, -s file    Path to YAML file with sources (default: artefacts.yml)
+  --name, -n name       Artefact name to download
   --token, -t token     GitHub personal token
   --unit, -u            Run application in unit mode (no colors and animations)
   --no-color, -nc       Disable colors in output
