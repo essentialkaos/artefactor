@@ -6,7 +6,7 @@ require (
 	github.com/essentialkaos/depsy v1.1.0
 	github.com/essentialkaos/ek/v12 v12.75.1
 	github.com/essentialkaos/go-simpleyaml/v2 v2.1.4
-	github.com/essentialkaos/npck v1.5.1
+	github.com/essentialkaos/npck v1.6.0
 )
 
 require (
