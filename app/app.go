@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
+	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/fsutil"
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
@@ -33,7 +34,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.2.1"
+	VER  = "0.3.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -41,6 +42,7 @@ const (
 
 // Options
 const (
+	OPT_LIST     = "L:list"
 	OPT_SOURCES  = "s:sources"
 	OPT_NAME     = "n:name"
 	OPT_TOKEN    = "t:token"
@@ -58,6 +60,7 @@ const (
 
 // optMap contains information about all supported options
 var optMap = options.Map{
+	OPT_LIST:     {Type: options.BOOL},
 	OPT_SOURCES:  {Value: "artefacts.yml"},
 	OPT_NAME:     {},
 	OPT_TOKEN:    {},
@@ -115,7 +118,14 @@ func Run(gitRev string, gomod []byte) {
 		os.Exit(1)
 	}
 
-	err = process(args)
+	dataDir := args.Get(0).Clean().String()
+
+	if options.GetB(OPT_LIST) {
+		listArtefacts(dataDir)
+		return
+	}
+
+	err = process(dataDir)
 
 	temp.Clean()
 
@@ -166,6 +176,8 @@ func configureUI() {
 		fmtc.DisableColors = true
 		spinner.DisableAnimation = true
 	}
+
+	fmtutil.SizeSeparator = " "
 }
 
 // prepare preconfigures app
@@ -184,8 +196,7 @@ func prepare() error {
 }
 
 // process starts arguments processing
-func process(args options.Arguments) error {
-	dataDir := args.Get(0).Clean().String()
+func process(dataDir string) error {
 	err := fsutil.ValidatePerms("DWRX", dataDir)
 
 	if err != nil {
@@ -259,6 +270,7 @@ func printMan() {
 func genUsage() *usage.Info {
 	info := usage.NewInfo("", "data-dir")
 
+	info.AddOption(OPT_LIST, "List downloaded artefacts in data directory")
 	info.AddOption(OPT_SOURCES, "Path to YAML file with sources {s-}(default: artefacts.yml){!}", "file")
 	info.AddOption(OPT_NAME, "Artefact name to download", "name")
 	info.AddOption(OPT_TOKEN, "GitHub personal token", "token")
