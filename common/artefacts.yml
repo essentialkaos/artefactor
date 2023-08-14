@@ -47,6 +47,12 @@
   file: "ripgrep-{version}-x86_64-unknown-linux-musl/rg"
   output: "rg-x86_64"
 
+- name: cloc
+  repo: AlDanial/cloc
+  source: "*.tar.gz"
+  file: "cloc-{version}/cloc"
+  output: "cloc-x86_64"
+
 - name: trivy
   repo: aquasecurity/trivy
   source: "*_Linux-64bit.rpm"
