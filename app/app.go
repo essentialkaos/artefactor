@@ -34,7 +34,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.3.0"
+	VER  = "0.3.1"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -244,11 +244,11 @@ func printCompletion() int {
 
 	switch options.GetS(OPT_COMPLETION) {
 	case "bash":
-		fmt.Printf(bash.Generate(info, "artefactor"))
+		fmt.Print(bash.Generate(info, "artefactor"))
 	case "fish":
-		fmt.Printf(fish.Generate(info, "artefactor"))
+		fmt.Print(fish.Generate(info, "artefactor"))
 	case "zsh":
-		fmt.Printf(zsh.Generate(info, optMap, "artefactor"))
+		fmt.Print(zsh.Generate(info, optMap, "artefactor"))
 	default:
 		return 1
 	}

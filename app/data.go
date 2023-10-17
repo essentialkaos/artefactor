@@ -106,9 +106,9 @@ func (a *Artefact) Validate() error {
 		return fmt.Errorf("Artefact \"%s\" invalid: source can't be empty", a.Name)
 	case a.Output == "":
 		return fmt.Errorf("Artefact \"%s\" invalid: output can't be empty", a.Name)
-	case a.Dir != "" && strings.Index(a.Dir, "/") != -1:
+	case a.Dir != "" && strings.Contains(a.Dir, "/"):
 		return fmt.Errorf("Artefact \"%s\" invalid: dir must not contains /", a.Name)
-	case a.Repo != "" && strings.Index(a.Repo, "/") == -1:
+	case a.Repo != "" && !strings.Contains(a.Repo, "/"):
 		return fmt.Errorf("Artefact \"%s\" invalid: repo name is invalid", a.Name)
 	case a.File == "" && strings.HasSuffix(a.Source, ".tar.gz"),
 		a.File == "" && strings.HasSuffix(a.Source, ".tar.xz"),
