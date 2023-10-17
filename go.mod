@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/klauspost/compress v1.17.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	golang.org/x/sys v0.13.0 // indirect

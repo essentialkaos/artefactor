@@ -7,8 +7,8 @@ github.com/essentialkaos/go-simpleyaml/v2 v2.1.4 h1:B2bXdGWaQ6Xy3HTsO2DLBoNV7cbM
 github.com/essentialkaos/go-simpleyaml/v2 v2.1.4/go.mod h1:pVQTleUBC8xBI9+HnTF38xWBZqANNrmMAzwmUemblJg=
 github.com/essentialkaos/npck v1.6.1 h1:cFhLRRFNbl7tBXQD2+EkzTHy6y7+oxfvwsVgbhaFvUg=
 github.com/essentialkaos/npck v1.6.1/go.mod h1:Leny9a2R4otIGqZdnrs8swhI9KvwO+Rmmn2zThpPoN4=
-github.com/klauspost/compress v1.17.0 h1:Rnbp4K9EjcDuVuHtd0dgA4qNuv9yKDYKK1ulpJwgrqM=
-github.com/klauspost/compress v1.17.0/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
+github.com/klauspost/compress v1.17.1 h1:NE3C767s2ak2bweCZo3+rdP4U/HoyVXLv/X9f2gPS5g=
+github.com/klauspost/compress v1.17.1/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/pierrec/lz4/v4 v4.1.18 h1:xaKrnTkyoqfh1YItXl56+6KJNVYWlEEPuAQW9xsplYQ=
