@@ -19,11 +19,23 @@ import (
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+type ArtefactInfo struct {
+	Name     string
+	Versions []*ArtefactVersion
+}
+
+type ArtefactVersion struct {
+	Version string
+	Size    int64
+}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
 // listArtefacts prints list of downloaded artefacts
 func listArtefacts(dataDir string) {
-	dirs := fsutil.List(dataDir, true, fsutil.ListingFilter{Perms: "DRX"})
+	artefacts := getArtefacts(dataDir)
 
-	if len(dirs) == 0 {
+	if len(artefacts) == 0 {
 		fmtc.Println("{y}No artefacts found{!}")
 		return
 	}
@@ -34,40 +46,63 @@ func listArtefacts(dataDir string) {
 		}
 	}
 
-	sortutil.StringsNatural(dirs)
-	fmtc.NewLine()
+	for _, info := range artefacts {
+		size := fmtutil.PrettyNum(len(info.Versions))
 
-	for _, name := range dirs {
-		listArtefactVersions(name, path.Join(dataDir, name))
+		fmtc.Printf("{s-}┌{!}{*@} %s {!}{#240}{*@} %s {!}\n", info.Name, size)
+		fmtc.Printf("{s-}│{!}\n")
+
+		for i, version := range info.Versions {
+			if i+1 != len(info.Versions) {
+				fmtc.Printf(
+					"{s-}├{!} {s}%s{!} {s-}(%s){!}\n",
+					version.Version,
+					fmtutil.PrettySize(version.Size),
+				)
+			} else {
+				fmtc.Printf(
+					"{s-}└{!} {*}%s{!} {s-}(%s){!}\n",
+					version.Version,
+					fmtutil.PrettySize(version.Size),
+				)
+			}
+		}
+
 		fmtc.NewLine()
 	}
 }
 
-// listArtefactVersions prints list of all versions
-func listArtefactVersions(name, dir string) {
-	versions := fsutil.List(dir, true, fsutil.ListingFilter{
-		NotMatchPatterns: []string{"latest"},
-	})
+// getArtefacts returns info about all artefacts in given directory
+func getArtefacts(dataDir string) []*ArtefactInfo {
+	dirs := fsutil.List(dataDir, true, fsutil.ListingFilter{Perms: "DRX"})
 
-	if len(versions) == 0 {
-		fmtc.Printf("{s-}%s{!}\n", name)
-		return
+	if len(dirs) == 0 {
+		return nil
 	}
 
-	fmtc.Printf("{s-}┌{!}{*@} %s {!}{#240}{@} %s {!}\n", name, fmtutil.PrettyNum(len(versions)))
-	fmtc.Printf("{s-}│{!}\n")
+	var result []*ArtefactInfo
 
-	sortutil.Versions(versions)
+	sortutil.StringsNatural(dirs)
 
-	for i, version := range versions {
-		dataSize := getVersionDataSize(path.Join(dir, version))
+	for _, name := range dirs {
+		versions := fsutil.List(path.Join(dataDir, name), true, fsutil.ListingFilter{
+			NotMatchPatterns: []string{"latest"},
+		})
 
-		if i+1 != len(versions) {
-			fmtc.Printf("{s-}├{!} %s {s-}(%s){!}\n", version, fmtutil.PrettySize(dataSize))
-		} else {
-			fmtc.Printf("{s-}└{!} %s {s-}(%s){!}\n", version, fmtutil.PrettySize(dataSize))
+		if len(versions) == 0 {
+			continue
+		}
+
+		info := &ArtefactInfo{Name: name}
+		result = append(result, info)
+
+		for _, version := range versions {
+			dataSize := getVersionDataSize(path.Join(dataDir, name, version))
+			info.Versions = append(info.Versions, &ArtefactVersion{version, dataSize})
 		}
 	}
+
+	return result
 }
 
 // getVersionDataSize returns size of all version files
