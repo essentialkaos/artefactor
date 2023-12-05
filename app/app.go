@@ -254,6 +254,10 @@ func printMan() {
 func genUsage() *usage.Info {
 	info := usage.NewInfo("", "data-dir")
 
+	if fmtc.Is256ColorsSupported() {
+		info.AppNameColorTag = colorTagApp
+	}
+
 	info.AddOption(OPT_LIST, "List downloaded artefacts in data directory")
 	info.AddOption(OPT_SOURCES, "Path to YAML file with sources {s-}(default: artefacts.yml){!}", "file")
 	info.AddOption(OPT_NAME, "Artefact name to download", "name")
@@ -262,6 +266,21 @@ func genUsage() *usage.Info {
 	info.AddOption(OPT_NO_COLOR, "Disable colors in output")
 	info.AddOption(OPT_HELP, "Show this help message")
 	info.AddOption(OPT_VER, "Show version")
+
+	info.AddExample(
+		"data",
+		"Download artefacts to data directory",
+	)
+
+	info.AddExample(
+		"-s ~/artefacts-all.yml data",
+		"Download artefacts from given file to data directory",
+	)
+
+	info.AddExample(
+		"-s ~/artefacts-all.yml -n shellcheck data",
+		"Download shellcheck artefacts from given file to data directory",
+	)
 
 	return info
 }
