@@ -1,5 +1,5 @@
 [Unit]
-Description=Retrieve disk space taken up by logs and old installs 
+Description=Start artefacts downloading
 
 [Service]
 Type=oneshot

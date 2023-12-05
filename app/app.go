@@ -10,7 +10,6 @@ package app
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fmtutil"
@@ -34,7 +33,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.3.0"
+	VER  = "0.4.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -75,9 +74,7 @@ var optMap = options.Map{
 }
 
 var temp *tmp.Temp
-
-var colorTagApp string
-var colorTagVer string
+var colorTagApp, colorTagVer string
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
@@ -137,20 +134,7 @@ func Run(gitRev string, gomod []byte) {
 
 // preConfigureUI preconfigures UI based on information about user terminal
 func preConfigureUI() {
-	term := os.Getenv("TERM")
-
-	fmtc.DisableColors = true
-
-	if term != "" {
-		switch {
-		case strings.Contains(term, "xterm"),
-			strings.Contains(term, "color"),
-			term == "screen":
-			fmtc.DisableColors = false
-		}
-	}
-
-	if !fsutil.IsCharacterDevice("/dev/stdout") && os.Getenv("FAKETTY") == "" {
+	if !fmtc.IsColorsSupported() {
 		fmtc.DisableColors = true
 	}
 
@@ -160,9 +144,9 @@ func preConfigureUI() {
 
 	switch {
 	case fmtc.Is256ColorsSupported():
-		colorTagApp, colorTagVer = "{#117}", "{#117}"
+		colorTagApp, colorTagVer = "{*}{#117}", "{#117}"
 	default:
-		colorTagApp, colorTagVer = "{c}", "{c}"
+		colorTagApp, colorTagVer = "{*}{c}", "{c}"
 	}
 }
 
@@ -244,11 +228,11 @@ func printCompletion() int {
 
 	switch options.GetS(OPT_COMPLETION) {
 	case "bash":
-		fmt.Printf(bash.Generate(info, "artefactor"))
+		fmt.Print(bash.Generate(info, "artefactor"))
 	case "fish":
-		fmt.Printf(fish.Generate(info, "artefactor"))
+		fmt.Print(fish.Generate(info, "artefactor"))
 	case "zsh":
-		fmt.Printf(zsh.Generate(info, optMap, "artefactor"))
+		fmt.Print(zsh.Generate(info, optMap, "artefactor"))
 	default:
 		return 1
 	}
@@ -270,6 +254,10 @@ func printMan() {
 func genUsage() *usage.Info {
 	info := usage.NewInfo("", "data-dir")
 
+	if fmtc.Is256ColorsSupported() {
+		info.AppNameColorTag = colorTagApp
+	}
+
 	info.AddOption(OPT_LIST, "List downloaded artefacts in data directory")
 	info.AddOption(OPT_SOURCES, "Path to YAML file with sources {s-}(default: artefacts.yml){!}", "file")
 	info.AddOption(OPT_NAME, "Artefact name to download", "name")
@@ -278,6 +266,21 @@ func genUsage() *usage.Info {
 	info.AddOption(OPT_NO_COLOR, "Disable colors in output")
 	info.AddOption(OPT_HELP, "Show this help message")
 	info.AddOption(OPT_VER, "Show version")
+
+	info.AddExample(
+		"data",
+		"Download artefacts to data directory",
+	)
+
+	info.AddExample(
+		"-s ~/artefacts-all.yml data",
+		"Download artefacts from given file to data directory",
+	)
+
+	info.AddExample(
+		"-s ~/artefacts-all.yml -n shellcheck data",
+		"Download shellcheck artefacts from given file to data directory",
+	)
 
 	return info
 }
@@ -299,8 +302,9 @@ func genAbout(gitRev string) *usage.About {
 	}
 
 	if fmtc.Is256ColorsSupported() {
-		about.AppNameColorTag = "{*}" + colorTagApp
+		about.AppNameColorTag = colorTagApp
 		about.VersionColorTag = colorTagVer
+		about.DescSeparator = "{s}—{!}"
 	}
 
 	return about

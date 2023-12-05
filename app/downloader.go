@@ -171,6 +171,10 @@ func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
 		AutoDiscard: true,
 	}.Get()
 
+	if err != nil {
+		return "", err
+	}
+
 	w := bufio.NewWriter(tempFd)
 	_, err = io.Copy(w, resp.Response.Body)
 
