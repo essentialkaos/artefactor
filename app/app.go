@@ -10,7 +10,6 @@ package app
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fmtutil"
@@ -34,7 +33,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.3.1"
+	VER  = "0.4.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -75,9 +74,7 @@ var optMap = options.Map{
 }
 
 var temp *tmp.Temp
-
-var colorTagApp string
-var colorTagVer string
+var colorTagApp, colorTagVer string
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
@@ -137,20 +134,7 @@ func Run(gitRev string, gomod []byte) {
 
 // preConfigureUI preconfigures UI based on information about user terminal
 func preConfigureUI() {
-	term := os.Getenv("TERM")
-
-	fmtc.DisableColors = true
-
-	if term != "" {
-		switch {
-		case strings.Contains(term, "xterm"),
-			strings.Contains(term, "color"),
-			term == "screen":
-			fmtc.DisableColors = false
-		}
-	}
-
-	if !fsutil.IsCharacterDevice("/dev/stdout") && os.Getenv("FAKETTY") == "" {
+	if !fmtc.IsColorsSupported() {
 		fmtc.DisableColors = true
 	}
 
@@ -160,9 +144,9 @@ func preConfigureUI() {
 
 	switch {
 	case fmtc.Is256ColorsSupported():
-		colorTagApp, colorTagVer = "{#117}", "{#117}"
+		colorTagApp, colorTagVer = "{*}{#117}", "{#117}"
 	default:
-		colorTagApp, colorTagVer = "{c}", "{c}"
+		colorTagApp, colorTagVer = "{*}{c}", "{c}"
 	}
 }
 
@@ -299,8 +283,9 @@ func genAbout(gitRev string) *usage.About {
 	}
 
 	if fmtc.Is256ColorsSupported() {
-		about.AppNameColorTag = "{*}" + colorTagApp
+		about.AppNameColorTag = colorTagApp
 		about.VersionColorTag = colorTagVer
+		about.DescSeparator = "{s}—{!}"
 	}
 
 	return about

@@ -11,8 +11,10 @@ import (
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fmtutil"
 	"github.com/essentialkaos/ek/v12/fsutil"
+	"github.com/essentialkaos/ek/v12/pager"
 	"github.com/essentialkaos/ek/v12/path"
 	"github.com/essentialkaos/ek/v12/sortutil"
+	"github.com/essentialkaos/ek/v12/terminal/tty"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -26,8 +28,13 @@ func listArtefacts(dataDir string) {
 		return
 	}
 
-	sortutil.StringsNatural(dirs)
+	if tty.IsTTY() {
+		if pager.Setup() == nil {
+			defer pager.Complete()
+		}
+	}
 
+	sortutil.StringsNatural(dirs)
 	fmtc.NewLine()
 
 	for _, name := range dirs {
