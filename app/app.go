@@ -17,6 +17,8 @@ import (
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
+	"github.com/essentialkaos/ek/v12/support"
+	"github.com/essentialkaos/ek/v12/support/deps"
 	"github.com/essentialkaos/ek/v12/tmp"
 	"github.com/essentialkaos/ek/v12/usage"
 	"github.com/essentialkaos/ek/v12/usage/completion/bash"
@@ -24,8 +26,6 @@ import (
 	"github.com/essentialkaos/ek/v12/usage/completion/zsh"
 	"github.com/essentialkaos/ek/v12/usage/man"
 	"github.com/essentialkaos/ek/v12/usage/update"
-
-	"github.com/essentialkaos/artefactor/app/support"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -33,7 +33,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.4.1"
+	VER  = "0.4.2"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -101,7 +101,8 @@ func Run(gitRev string, gomod []byte) {
 		genAbout(gitRev).Print(options.GetS(OPT_VER))
 		os.Exit(0)
 	case options.GetB(OPT_VERB_VER):
-		support.Print(APP, VER, gitRev, gomod)
+		support.Collect(APP, VER).WithRevision(gitRev).
+			WithDeps(deps.Extract(gomod)).Print()
 		os.Exit(0)
 	case options.GetB(OPT_HELP) || len(args) == 0:
 		genUsage().Print()
@@ -208,15 +209,6 @@ func printError(f string, a ...interface{}) {
 		fmtc.Fprintln(os.Stderr, "{r}▲ "+f+"{!}")
 	} else {
 		fmtc.Fprintf(os.Stderr, "{r}▲ "+f+"{!}\n", a...)
-	}
-}
-
-// printError prints warning message to console
-func printWarn(f string, a ...interface{}) {
-	if len(a) == 0 {
-		fmtc.Fprintln(os.Stderr, "{y}▲ "+f+"{!}")
-	} else {
-		fmtc.Fprintf(os.Stderr, "{y}▲ "+f+"{!}\n", a...)
 	}
 }
 
