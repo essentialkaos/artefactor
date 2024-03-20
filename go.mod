@@ -1,6 +1,6 @@
 module github.com/essentialkaos/artefactor
 
-go 1.20
+go 1.18
 
 require (
 	github.com/essentialkaos/ek/v12 v12.108.1
