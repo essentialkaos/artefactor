@@ -19,6 +19,7 @@ import (
 	"github.com/essentialkaos/ek/v12/spinner"
 	"github.com/essentialkaos/ek/v12/support"
 	"github.com/essentialkaos/ek/v12/support/deps"
+	"github.com/essentialkaos/ek/v12/terminal/tty"
 	"github.com/essentialkaos/ek/v12/tmp"
 	"github.com/essentialkaos/ek/v12/usage"
 	"github.com/essentialkaos/ek/v12/usage/completion/bash"
@@ -135,11 +136,7 @@ func Run(gitRev string, gomod []byte) {
 
 // preConfigureUI preconfigures UI based on information about user terminal
 func preConfigureUI() {
-	if !fmtc.IsColorsSupported() {
-		fmtc.DisableColors = true
-	}
-
-	if os.Getenv("NO_COLOR") != "" {
+	if !tty.IsTTY() {
 		fmtc.DisableColors = true
 	}
 
