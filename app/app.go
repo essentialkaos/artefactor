@@ -10,6 +10,8 @@ package app
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fmtutil"
@@ -20,6 +22,7 @@ import (
 	"github.com/essentialkaos/ek/v12/support"
 	"github.com/essentialkaos/ek/v12/support/deps"
 	"github.com/essentialkaos/ek/v12/terminal/tty"
+	"github.com/essentialkaos/ek/v12/timeutil"
 	"github.com/essentialkaos/ek/v12/tmp"
 	"github.com/essentialkaos/ek/v12/usage"
 	"github.com/essentialkaos/ek/v12/usage/completion/bash"
@@ -102,8 +105,11 @@ func Run(gitRev string, gomod []byte) {
 		genAbout(gitRev).Print(options.GetS(OPT_VER))
 		os.Exit(0)
 	case options.GetB(OPT_VERB_VER):
-		support.Collect(APP, VER).WithRevision(gitRev).
-			WithDeps(deps.Extract(gomod)).Print()
+		support.Collect(APP, VER).
+			WithRevision(gitRev).
+			WithDeps(deps.Extract(gomod)).
+			WithChecks(checkGithubAvailability()...).
+			Print()
 		os.Exit(0)
 	case options.GetB(OPT_HELP) || len(args) == 0:
 		genUsage().Print()
@@ -210,6 +216,71 @@ func printError(f string, a ...interface{}) {
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
+
+// checkGithubAvailability checks GitHub API availability
+func checkGithubAvailability() []support.Check {
+	var chks []support.Check
+
+	headers := req.Headers{"X-GitHub-Api-Version": _API_VERSION}
+
+	if options.Has(OPT_TOKEN) {
+		headers["Authorization"] = "Bearer " + options.GetS(OPT_TOKEN)
+	}
+
+	resp, err := req.Request{
+		URL:         "https://api.github.com/octocat",
+		Headers:     headers,
+		AutoDiscard: true,
+	}.Get()
+
+	if err != nil {
+		chks = append(chks, support.Check{
+			support.CHECK_ERROR, "GitHub API", "Can't send request",
+		})
+		return chks
+	} else if resp.StatusCode != 200 {
+		chks = append(chks, support.Check{
+			support.CHECK_ERROR, "GitHub API", fmt.Sprintf(
+				"API returned non-ok status code %s", resp.StatusCode,
+			),
+		})
+		return chks
+	}
+
+	chks = append(chks, support.Check{
+		support.CHECK_OK, "GitHub API", "API available",
+	})
+
+	remaining := resp.Header.Get("X-Ratelimit-Remaining")
+	used := resp.Header.Get("X-Ratelimit-Used")
+	limit := resp.Header.Get("X-Ratelimit-Limit")
+	resetTS, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
+	resetDate := time.Unix(resetTS, 0)
+
+	chk := support.Check{
+		Title: "API Ratelimit",
+		Message: fmt.Sprintf(
+			"(Used: %s/%s | Reset: %s)",
+			used, limit, timeutil.Format(resetDate, "%Y/%m/%d %H:%M:%S"),
+		),
+	}
+
+	switch remaining {
+	case "":
+		chk.Status = support.CHECK_WARN
+		chk.Message = "No info about ratelimit"
+	case "0":
+		chk.Status = support.CHECK_ERROR
+		chk.Message = "No remaining requests " + chk.Message
+	default:
+		chk.Status = support.CHECK_OK
+		chk.Message = "OK " + chk.Message
+	}
+
+	chks = append(chks, chk)
+
+	return chks
+}
 
 // printCompletion prints completion for given shell
 func printCompletion() int {
