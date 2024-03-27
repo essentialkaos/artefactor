@@ -2,7 +2,7 @@ package app
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                         Copyright (c) 2023 ESSENTIAL KAOS                          //
+//                         Copyright (c) 2024 ESSENTIAL KAOS                          //
 //      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -87,7 +87,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 	outputFile := path.Join(releaseDir, artefact.Output)
 
 	if fsutil.IsExist(outputFile) {
-		fmtc.Println("   {g}The latest version already downloaded{!}")
+		fmtc.Println("   {s}There is no update available for this application{!}")
 		return nil
 	}
 
@@ -110,7 +110,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 	binarySize := fsutil.GetSize(outputFile)
 
 	fmtc.Printf(
-		"   {g}Artefact successfully downloaded {s}%s{g} and saved to data directory{!}\n",
+		"   {g}Artefact successfully downloaded (%s) and saved to data directory{!}\n",
 		fmtutil.PrettySize(binarySize),
 	)
 
