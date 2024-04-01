@@ -14,7 +14,7 @@
 
 Summary:        Utility for downloading artefacts from GitHub
 Name:           artefactor
-Version:        0.4.1
+Version:        0.4.2
 Release:        0%{?dist}
 Group:          Applications/System
 License:        Apache License, Version 2.0
@@ -84,5 +84,8 @@ rm -rf %{buildroot}
 ################################################################################
 
 %changelog
+* Fri Mar 22 2024 Anton Novojilov <andy@essentialkaos.com> - 0.4.2-0
+- Minor UI improvements
+
 * Mon Mar 04 2024 Anton Novojilov <andy@essentialkaos.com> - 0.4.1-0
 - Initial build for kaos-repo
