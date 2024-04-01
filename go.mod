@@ -3,7 +3,7 @@ module github.com/essentialkaos/artefactor
 go 1.18
 
 require (
-	github.com/essentialkaos/ek/v12 v12.113.0
+	github.com/essentialkaos/ek/v12 v12.113.1
 	github.com/essentialkaos/go-simpleyaml/v2 v2.1.4
 	github.com/essentialkaos/npck v1.6.2
 )
