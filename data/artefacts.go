@@ -1,4 +1,4 @@
-package app
+package data
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/essentialkaos/go-simpleyaml/v2"
+	simpleyaml "github.com/essentialkaos/go-simpleyaml/v2"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -34,8 +34,8 @@ type Artefacts []*Artefact
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// ParseArtefacts parses YAML file with artefacts
-func parseArtefacts(file string) (Artefacts, error) {
+// ReadArtefacts reads YAML-encoded artefacts list
+func ReadArtefacts(file string) (Artefacts, error) {
 	yamlData, err := os.ReadFile(file)
 
 	if err != nil {
@@ -50,6 +50,58 @@ func parseArtefacts(file string) (Artefacts, error) {
 
 	return convertArtefactsYaml(yaml)
 }
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+// Validate validates all artefacts
+func (a Artefacts) Validate() error {
+	for _, artefact := range a {
+		err := artefact.Validate()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Validate validates artefact info
+func (a *Artefact) Validate() error {
+	switch {
+	case a.Name == "":
+		return fmt.Errorf("Artefact %d invalid: name can't be empty", a.index)
+	case a.Repo == "":
+		return fmt.Errorf("Artefact %q invalid: repo can't be empty", a.Name)
+	case a.Source == "":
+		return fmt.Errorf("Artefact %q invalid: source can't be empty", a.Name)
+	case a.Output == "":
+		return fmt.Errorf("Artefact %q invalid: output can't be empty", a.Name)
+	case a.Dir != "" && strings.Contains(a.Dir, "/"):
+		return fmt.Errorf("Artefact %q invalid: dir must not contains /", a.Name)
+	case a.Repo != "" && !strings.Contains(a.Repo, "/"):
+		return fmt.Errorf("Artefact %q invalid: repo name is invalid", a.Name)
+	case a.File == "" && strings.HasSuffix(a.Source, ".tar.gz"),
+		a.File == "" && strings.HasSuffix(a.Source, ".tar.xz"),
+		a.File == "" && strings.HasSuffix(a.Source, ".zip"):
+		return fmt.Errorf("Artefact %q invalid: file is not defined for archive file", a.Name)
+	}
+
+	return nil
+}
+
+// ApplyVersion applies version data to artefact
+func (a *Artefact) ApplyVersion(version string) {
+	if strings.Contains(a.File, "{version}") {
+		a.File = strings.ReplaceAll(a.File, "{version}", version)
+	}
+
+	if strings.Contains(a.Source, "{version}") {
+		a.Source = strings.ReplaceAll(a.Source, "{version}", version)
+	}
+}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
 
 // convertArtefactsYaml converts yaml data into internal struct
 func convertArtefactsYaml(yaml *simpleyaml.Yaml) (Artefacts, error) {
@@ -78,54 +130,4 @@ func convertArtefactsYaml(yaml *simpleyaml.Yaml) (Artefacts, error) {
 	}
 
 	return result, nil
-}
-
-// ////////////////////////////////////////////////////////////////////////////////// //
-
-// Validate validates all artefacts
-func (a Artefacts) Validate() error {
-	for _, artefact := range a {
-		err := artefact.Validate()
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Validate validates artefact info
-func (a *Artefact) Validate() error {
-	switch {
-	case a.Name == "":
-		return fmt.Errorf("Artefact %d invalid: name can't be empty", a.index)
-	case a.Repo == "":
-		return fmt.Errorf("Artefact \"%s\" invalid: repo can't be empty", a.Name)
-	case a.Source == "":
-		return fmt.Errorf("Artefact \"%s\" invalid: source can't be empty", a.Name)
-	case a.Output == "":
-		return fmt.Errorf("Artefact \"%s\" invalid: output can't be empty", a.Name)
-	case a.Dir != "" && strings.Contains(a.Dir, "/"):
-		return fmt.Errorf("Artefact \"%s\" invalid: dir must not contains /", a.Name)
-	case a.Repo != "" && !strings.Contains(a.Repo, "/"):
-		return fmt.Errorf("Artefact \"%s\" invalid: repo name is invalid", a.Name)
-	case a.File == "" && strings.HasSuffix(a.Source, ".tar.gz"),
-		a.File == "" && strings.HasSuffix(a.Source, ".tar.xz"),
-		a.File == "" && strings.HasSuffix(a.Source, ".zip"):
-		return fmt.Errorf("Artefact \"%s\" invalid: file is not defined for archive file", a.Name)
-	}
-
-	return nil
-}
-
-// ApplyVersion applies version data to artefact
-func (a *Artefact) ApplyVersion(version string) {
-	if strings.Contains(a.File, "{version}") {
-		a.File = strings.ReplaceAll(a.File, "{version}", version)
-	}
-
-	if strings.Contains(a.Source, "{version}") {
-		a.Source = strings.ReplaceAll(a.Source, "{version}", version)
-	}
 }

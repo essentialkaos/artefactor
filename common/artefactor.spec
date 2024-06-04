@@ -14,7 +14,7 @@
 
 Summary:        Utility for downloading artefacts from GitHub
 Name:           artefactor
-Version:        0.4.2
+Version:        0.5.0
 Release:        0%{?dist}
 Group:          Applications/System
 License:        Apache License, Version 2.0
@@ -26,7 +26,7 @@ Source100:      checksum.sha512
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  golang >= 1.21
+BuildRequires:  golang >= 1.22
 
 Provides:       %{name} = %{version}-%{release}
 
@@ -62,6 +62,8 @@ install -pDm 755 %{name}/%{name} \
 install -pDm 644 %{name}/common/artefacts.yml \
                  %{buildroot}%{_srv}/%{name}/artefacts.yml
 
+install -pDm 640 %{name}/common/%{name}.sysconfig \
+                 %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 install -pDm 644 %{name}/common/%{name}.service \
                  %{buildroot}%{_unitdir}/%{name}.service
 install -pDm 644 %{name}/common/%{name}.timer \
