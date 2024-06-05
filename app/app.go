@@ -172,7 +172,7 @@ func configureUI() {
 		fmtc.DisableColors = true
 	}
 
-	if options.GetB(OPT_UNIT) {
+	if options.GetB(OPT_UNIT) || tty.IsSystemd() {
 		fmtc.DisableColors = true
 		spinner.DisableAnimation = true
 	}
