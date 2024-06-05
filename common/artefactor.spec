@@ -73,6 +73,11 @@ install -pDm 644 %{name}/common/%{name}.timer \
 rm -rf %{buildroot}
 
 %post
+if [[ $1 -eq 0 ]] ; then
+  systemctl --no-reload disable %{name}.service &>/dev/null || :
+  systemctl stop %{name}.service &>/dev/null || :
+fi
+
 if [[ -d %{_sysconfdir}/bash_completion.d ]] ; then
   %{name} --completion=bash 1> %{_sysconfdir}/bash_completion.d/%{name} 2>/dev/null
 fi
@@ -86,6 +91,10 @@ if [[ -d %{_datadir}/zsh/site-functions ]] ; then
 fi
 
 %postun
+if [[ $1 -ge 1 ]] ; then
+  systemctl daemon-reload &>/dev/null || :
+fi
+
 if [[ $1 == 0 ]] ; then
   if [[ -f %{_sysconfdir}/bash_completion.d/%{name} ]] ; then
     rm -f %{_sysconfdir}/bash_completion.d/%{name} &>/dev/null || :
@@ -106,6 +115,7 @@ fi
 %defattr(-,root,root,-)
 %doc %{name}/LICENSE
 %dir %{_srv}/%{name}/data
+%config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 %config(noreplace) %{_srv}/%{name}/artefacts.yml
 %config(noreplace) %{_unitdir}/%{name}.service
 %config(noreplace) %{_unitdir}/%{name}.timer
