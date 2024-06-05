@@ -1,4 +1,4 @@
-package app
+package github
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
@@ -13,39 +13,82 @@ import (
 	"strings"
 	"time"
 
-	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/timeutil"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-const (
-	_API_VERSION = "2022-11-28"
-)
+const API_VERSION = "2022-11-28"
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-type ghRelease struct {
-	Version     string     `json:"tag_name"`
-	PublishDate time.Time  `json:"published_at"`
-	Assets      []*ghAsset `json:"assets"`
+// Release contains info about release
+type Release struct {
+	Version     string    `json:"tag_name"`
+	PublishDate time.Time `json:"published_at"`
+	Assets      []*Asset  `json:"assets"`
 }
 
-type ghAsset struct {
+// Asset contains info about release asset
+type Asset struct {
 	URL string `json:"browser_download_url"`
 }
 
+// Limits contains info about GitHubv API limits
+type Limits struct {
+	Used  int
+	Total int
+	Reset time.Time
+}
+
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// releaseCache is cache for github releases data
-var releaseCache = map[string]*ghRelease{}
+// Token is GitHub access token
+var Token string
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// getLatestReleaseVersion returns the latest version of release
-func getLatestReleaseVersion(repo string) (string, time.Time, error) {
-	release, err := getLatestReleaseInfo(repo)
+// cache is cache for github releases data
+var cache = map[string]*Release{}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+// GetLimits returns info about limits
+func GetLimits() (Limits, error) {
+	headers := req.Headers{"X-GitHub-Api-Version": API_VERSION}
+
+	if Token != "" {
+		headers["Authorization"] = "Bearer " + Token
+	}
+
+	resp, err := req.Request{
+		URL:         "https://api.github.com/octocat",
+		Headers:     headers,
+		AutoDiscard: true,
+	}.Get()
+
+	if err != nil {
+		return Limits{}, fmt.Errorf("Can't send request")
+	} else if resp.StatusCode != 200 {
+		return Limits{}, fmt.Errorf("API returned non-ok status code %d", resp.StatusCode)
+	}
+
+	used, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Used"))
+	total, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Limit"))
+	resetTS, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
+	resetDate := time.Unix(resetTS, 0)
+
+	return Limits{
+		Used:  used,
+		Total: total,
+		Reset: resetDate,
+	}, nil
+}
+
+// GetLatestReleaseVersion returns the latest version of release
+func GetLatestReleaseVersion(repo string) (string, time.Time, error) {
+	release, err := GetLatestReleaseInfo(repo)
 
 	if err != nil {
 		return "", time.Time{}, err
@@ -54,9 +97,9 @@ func getLatestReleaseVersion(repo string) (string, time.Time, error) {
 	return strings.TrimLeft(release.Version, "v"), release.PublishDate, nil
 }
 
-// getLatestReleaseAssets returns slice with URLs from the latest release
-func getLatestReleaseAssets(repo string) ([]string, error) {
-	release, err := getLatestReleaseInfo(repo)
+// GetLatestReleaseAssets returns slice with URLs from the latest release
+func GetLatestReleaseAssets(repo string) ([]string, error) {
+	release, err := GetLatestReleaseInfo(repo)
 
 	if err != nil {
 		return nil, err
@@ -71,17 +114,16 @@ func getLatestReleaseAssets(repo string) ([]string, error) {
 	return urls, nil
 }
 
-func getLatestReleaseInfo(repo string) (*ghRelease, error) {
-	if releaseCache[repo] != nil {
-		return releaseCache[repo], nil
+// GetLatestReleaseInfo returns info about the latest release
+func GetLatestReleaseInfo(repo string) (*Release, error) {
+	if cache[repo] != nil {
+		return cache[repo], nil
 	}
 
-	headers := req.Headers{
-		"X-GitHub-Api-Version": _API_VERSION,
-	}
+	headers := req.Headers{"X-GitHub-Api-Version": API_VERSION}
 
-	if options.Has(OPT_TOKEN) {
-		headers["Authorization"] = "Bearer " + options.GetS(OPT_TOKEN)
+	if Token != "" {
+		headers["Authorization"] = "Bearer " + Token
 	}
 
 	resp, err := req.Request{
@@ -111,11 +153,11 @@ func getLatestReleaseInfo(repo string) (*ghRelease, error) {
 		return nil, fmt.Errorf("GitHub returned non-OK response code %d", resp.StatusCode)
 	}
 
-	release := &ghRelease{}
+	release := &Release{}
 	err = resp.JSON(release)
 
 	if err == nil {
-		releaseCache[repo] = release
+		cache[repo] = release
 	} else {
 		return nil, fmt.Errorf("Can't decode response JSON: %v", err)
 	}

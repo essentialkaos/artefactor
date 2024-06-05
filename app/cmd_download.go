@@ -26,18 +26,53 @@ import (
 	"github.com/essentialkaos/ek/v12/timeutil"
 
 	"github.com/essentialkaos/npck"
+
+	"github.com/essentialkaos/artefactor/data"
+	"github.com/essentialkaos/artefactor/github"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// cmdDownload is "download" command handler
+func cmdDownload(args options.Arguments) error {
+	if !args.Has(0) {
+		return fmt.Errorf("You must provide path to data directory")
+	}
+
+	dataDir := args.Get(0).Clean().String()
+	artefactName := args.Get(1).String()
+
+	err := fsutil.ValidatePerms("DWRX", dataDir)
+
+	if err != nil {
+		return err
+	}
+
+	artefacts, err := data.ReadArtefacts(options.GetS(OPT_SOURCES))
+
+	if err != nil {
+		return err
+	}
+
+	err = artefacts.Validate()
+
+	if err != nil {
+		return err
+	}
+
+	return downloadArtefacts(artefacts, dataDir, artefactName)
+}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
 // downloadArtefacts downloads artefacts from GitHub if required
-func downloadArtefacts(artefacts Artefacts, dataDir string) error {
+func downloadArtefacts(artefacts data.Artefacts, dataDir, artefactName string) error {
 	var isFailed bool
 
 	fmtc.NewLine()
 
 	for _, artefact := range artefacts {
-		if options.Has(OPT_NAME) && options.GetS(OPT_NAME) != artefact.Name {
+		if artefactName != "" && artefactName != artefact.Name {
 			continue
 		}
 
@@ -58,17 +93,18 @@ func downloadArtefacts(artefacts Artefacts, dataDir string) error {
 		return fmt.Errorf("Some artefacts can not be downloaded from GitHub")
 	}
 
-	return nil
+	return rebuildIndex(dataDir)
 }
 
-func downloadArtefact(artefact *Artefact, dataDir string) error {
+// downloadArtefact downloads specified artefact
+func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 	fmtc.Printf(
 		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}\n",
 		artefact.Name, artefact.Repo,
 	)
 
 	spinner.Show("Checking the latest version on GitHub")
-	version, pubDate, err := getLatestReleaseVersion(artefact.Repo)
+	version, pubDate, err := github.GetLatestReleaseVersion(artefact.Repo)
 	spinner.Done(err == nil)
 
 	if err != nil {
@@ -118,7 +154,7 @@ func downloadArtefact(artefact *Artefact, dataDir string) error {
 }
 
 // downloadArtefactData downloads and stores artefact
-func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile string) error {
+func downloadArtefactData(artefact *data.Artefact, version, outputDir, outputFile string) error {
 	spinner.Show("Downloading binary from GitHub")
 	binFile, err := downloadArtefactFile(artefact, version)
 	spinner.Done(err == nil)
@@ -153,7 +189,7 @@ func downloadArtefactData(artefact *Artefact, version, outputDir, outputFile str
 }
 
 // downloadArtefactFile downloads binary file
-func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
+func downloadArtefactFile(artefact *data.Artefact, version string) (string, error) {
 	url, err := getArtefactBinaryURL(artefact)
 
 	if err != nil {
@@ -187,8 +223,8 @@ func downloadArtefactFile(artefact *Artefact, version string) (string, error) {
 	return tempName, nil
 }
 
-// unpackArtefactArchive
-func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
+// unpackArtefactArchive unpacks artefact from archive
+func unpackArtefactArchive(artefact *data.Artefact, file string) (string, error) {
 	spinner.Show("Unpacking data")
 
 	tmpDir, err := temp.MkDir()
@@ -223,12 +259,12 @@ func unpackArtefactArchive(artefact *Artefact, file string) (string, error) {
 }
 
 // getArtefactBinaryURL returns URL of binary file
-func getArtefactBinaryURL(artefact *Artefact) (string, error) {
+func getArtefactBinaryURL(artefact *data.Artefact) (string, error) {
 	if httputil.IsURL(artefact.Source) {
 		return artefact.Source, nil
 	}
 
-	assets, err := getLatestReleaseAssets(artefact.Repo)
+	assets, err := github.GetLatestReleaseAssets(artefact.Repo)
 
 	if err != nil {
 		return "", err
@@ -247,7 +283,7 @@ func getArtefactBinaryURL(artefact *Artefact) (string, error) {
 }
 
 // getArtefactExt returns extension for artefact file
-func getArtefactExt(artefact *Artefact) string {
+func getArtefactExt(artefact *data.Artefact) string {
 	switch {
 	case strings.HasSuffix(artefact.Source, ".tar.gz"),
 		strings.HasSuffix(artefact.Source, ".tgz"):
@@ -266,7 +302,7 @@ func getArtefactExt(artefact *Artefact) string {
 }
 
 // isArchive returns true if given file is an archive
-func isArchive(artefact *Artefact) bool {
+func isArchive(artefact *data.Artefact) bool {
 	return getArtefactExt(artefact) != ""
 }
 
@@ -285,4 +321,21 @@ func restorePermissions(dataDir string) {
 	for _, file := range files {
 		os.Chmod(file, 0644)
 	}
+}
+
+// rebuildIndex rebuilds index
+func rebuildIndex(dataDir string) error {
+	index, err := data.BuildIndex(dataDir)
+
+	if err != nil {
+		return fmt.Errorf("Can't build index: %v", err)
+	}
+
+	err = index.Write(path.Join(dataDir, "index.json"))
+
+	if err != nil {
+		return fmt.Errorf("Can't save index: %v", err)
+	}
+
+	return nil
 }

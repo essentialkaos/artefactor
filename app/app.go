@@ -10,17 +10,17 @@ package app
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/essentialkaos/ek/v12/fmtc"
 	"github.com/essentialkaos/ek/v12/fmtutil"
-	"github.com/essentialkaos/ek/v12/fsutil"
 	"github.com/essentialkaos/ek/v12/options"
 	"github.com/essentialkaos/ek/v12/req"
 	"github.com/essentialkaos/ek/v12/spinner"
+	"github.com/essentialkaos/ek/v12/strutil"
 	"github.com/essentialkaos/ek/v12/support"
 	"github.com/essentialkaos/ek/v12/support/deps"
+	"github.com/essentialkaos/ek/v12/terminal"
+	"github.com/essentialkaos/ek/v12/terminal/input"
 	"github.com/essentialkaos/ek/v12/terminal/tty"
 	"github.com/essentialkaos/ek/v12/timeutil"
 	"github.com/essentialkaos/ek/v12/tmp"
@@ -30,6 +30,8 @@ import (
 	"github.com/essentialkaos/ek/v12/usage/completion/zsh"
 	"github.com/essentialkaos/ek/v12/usage/man"
 	"github.com/essentialkaos/ek/v12/usage/update"
+
+	"github.com/essentialkaos/artefactor/github"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -37,7 +39,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.4.2"
+	VER  = "0.5.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -45,10 +47,10 @@ const (
 
 // Options
 const (
-	OPT_LIST     = "L:list"
 	OPT_SOURCES  = "s:sources"
 	OPT_NAME     = "n:name"
 	OPT_TOKEN    = "t:token"
+	OPT_INSTALL  = "I:install"
 	OPT_UNIT     = "u:unit"
 	OPT_NO_COLOR = "nc:no-color"
 	OPT_HELP     = "h:help"
@@ -61,12 +63,20 @@ const (
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+const (
+	CMD_DOWNLOAD = "download"
+	CMD_GET      = "get"
+	CMD_LIST     = "list"
+	CMD_CLEANUP  = "cleanup"
+)
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
 // optMap contains information about all supported options
 var optMap = options.Map{
-	OPT_LIST:     {Type: options.BOOL},
 	OPT_SOURCES:  {Value: "artefacts.yml"},
-	OPT_NAME:     {},
 	OPT_TOKEN:    {},
+	OPT_INSTALL:  {Type: options.BOOL},
 	OPT_UNIT:     {Type: options.BOOL},
 	OPT_NO_COLOR: {Type: options.BOOL},
 	OPT_HELP:     {Type: options.BOOL},
@@ -88,12 +98,15 @@ func Run(gitRev string, gomod []byte) {
 
 	args, errs := options.Parse(optMap)
 
-	if len(errs) != 0 {
-		printError(errs[0].Error())
+	if !errs.IsEmpty() {
+		terminal.Error("Options parsing errors:")
+		terminal.Error(errs.String())
 		os.Exit(1)
 	}
 
 	configureUI()
+
+	github.Token = strutil.Q(options.GetS(OPT_TOKEN), os.Getenv("GITHUB_TOKEN"))
 
 	switch {
 	case options.Has(OPT_COMPLETION):
@@ -119,23 +132,15 @@ func Run(gitRev string, gomod []byte) {
 	err := prepare()
 
 	if err != nil {
-		printError(err.Error())
+		terminal.Error(err.Error())
 		os.Exit(1)
 	}
 
-	dataDir := args.Get(0).Clean().String()
-
-	if options.GetB(OPT_LIST) {
-		listArtefacts(dataDir)
-		return
-	}
-
-	err = process(dataDir)
-
-	temp.Clean()
+	err = execCommand(args)
 
 	if err != nil {
-		printError(err.Error())
+		terminal.Error(err.Error())
+		temp.Clean()
 		os.Exit(1)
 	}
 }
@@ -146,11 +151,18 @@ func preConfigureUI() {
 		fmtc.DisableColors = true
 	}
 
+	input.TitleColorTag = "{s}{&}"
+	input.Prompt = "{s}›{!} "
+	input.MaskSymbol = "•"
+	input.MaskSymbolColorTag = "{s-}"
+
 	switch {
 	case fmtc.Is256ColorsSupported():
 		colorTagApp, colorTagVer = "{*}{#117}", "{#117}"
+		fmtc.NameColor("primary", "{#117}")
 	default:
 		colorTagApp, colorTagVer = "{*}{c}", "{c}"
+		fmtc.NameColor("primary", "{c}")
 	}
 }
 
@@ -160,7 +172,7 @@ func configureUI() {
 		fmtc.DisableColors = true
 	}
 
-	if options.GetB(OPT_UNIT) {
+	if options.GetB(OPT_UNIT) || tty.IsSystemd() {
 		fmtc.DisableColors = true
 		spinner.DisableAnimation = true
 	}
@@ -183,36 +195,27 @@ func prepare() error {
 	return nil
 }
 
-// process starts arguments processing
-func process(dataDir string) error {
-	err := fsutil.ValidatePerms("DWRX", dataDir)
+// execCommand executes command
+func execCommand(args options.Arguments) error {
+	var err error
 
-	if err != nil {
-		return err
+	cmd := args.Get(0).String()
+	args = args[1:]
+
+	switch cmd {
+	case CMD_DOWNLOAD:
+		err = cmdDownload(args)
+	case CMD_GET:
+		err = cmdGet(args)
+	case CMD_LIST:
+		err = cmdList(args)
+	case CMD_CLEANUP:
+		err = cmdCleanup(args)
+	default:
+		return fmt.Errorf("Unknown command %q", cmd)
 	}
 
-	artefacts, err := parseArtefacts(options.GetS(OPT_SOURCES))
-
-	if err != nil {
-		return err
-	}
-
-	err = artefacts.Validate()
-
-	if err != nil {
-		return err
-	}
-
-	return downloadArtefacts(artefacts, dataDir)
-}
-
-// printError prints error message to console
-func printError(f string, a ...interface{}) {
-	if len(a) == 0 {
-		fmtc.Fprintln(os.Stderr, "{r}▲ "+f+"{!}")
-	} else {
-		fmtc.Fprintf(os.Stderr, "{r}▲ "+f+"{!}\n", a...)
-	}
+	return err
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -221,29 +224,13 @@ func printError(f string, a ...interface{}) {
 func checkGithubAvailability() []support.Check {
 	var chks []support.Check
 
-	headers := req.Headers{"X-GitHub-Api-Version": _API_VERSION}
-
-	if options.Has(OPT_TOKEN) {
-		headers["Authorization"] = "Bearer " + options.GetS(OPT_TOKEN)
-	}
-
-	resp, err := req.Request{
-		URL:         "https://api.github.com/octocat",
-		Headers:     headers,
-		AutoDiscard: true,
-	}.Get()
+	limits, err := github.GetLimits()
 
 	if err != nil {
 		chks = append(chks, support.Check{
-			support.CHECK_ERROR, "GitHub API", "Can't send request",
+			support.CHECK_ERROR, "GitHub API", err.Error(),
 		})
-		return chks
-	} else if resp.StatusCode != 200 {
-		chks = append(chks, support.Check{
-			support.CHECK_ERROR, "GitHub API", fmt.Sprintf(
-				"API returned non-ok status code %s", resp.StatusCode,
-			),
-		})
+
 		return chks
 	}
 
@@ -251,25 +238,21 @@ func checkGithubAvailability() []support.Check {
 		support.CHECK_OK, "GitHub API", "API available",
 	})
 
-	remaining := resp.Header.Get("X-Ratelimit-Remaining")
-	used := resp.Header.Get("X-Ratelimit-Used")
-	limit := resp.Header.Get("X-Ratelimit-Limit")
-	resetTS, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
-	resetDate := time.Unix(resetTS, 0)
-
 	chk := support.Check{
 		Title: "API Ratelimit",
 		Message: fmt.Sprintf(
 			"(Used: %s/%s | Reset: %s)",
-			used, limit, timeutil.Format(resetDate, "%Y/%m/%d %H:%M:%S"),
+			fmtutil.PrettyNum(limits.Used),
+			fmtutil.PrettyNum(limits.Total),
+			timeutil.Format(limits.Reset, "%Y/%m/%d %H:%M:%S"),
 		),
 	}
 
-	switch remaining {
-	case "":
+	switch {
+	case limits.Used == -1:
 		chk.Status = support.CHECK_WARN
 		chk.Message = "No info about ratelimit"
-	case "0":
+	case limits.Used >= limits.Total:
 		chk.Status = support.CHECK_ERROR
 		chk.Message = "No remaining requests " + chk.Message
 	default:
@@ -288,11 +271,11 @@ func printCompletion() int {
 
 	switch options.GetS(OPT_COMPLETION) {
 	case "bash":
-		fmt.Print(bash.Generate(info, "artefactor"))
+		fmt.Print(bash.Generate(info, APP))
 	case "fish":
-		fmt.Print(fish.Generate(info, "artefactor"))
+		fmt.Print(fish.Generate(info, APP))
 	case "zsh":
-		fmt.Print(zsh.Generate(info, optMap, "artefactor"))
+		fmt.Print(zsh.Generate(info, optMap, APP))
 	default:
 		return 1
 	}
@@ -302,44 +285,68 @@ func printCompletion() int {
 
 // printMan prints man page
 func printMan() {
-	fmt.Println(
-		man.Generate(
-			genUsage(),
-			genAbout(""),
-		),
-	)
+	fmt.Println(man.Generate(genUsage(), genAbout("")))
 }
 
 // genUsage generates usage info
 func genUsage() *usage.Info {
-	info := usage.NewInfo("", "data-dir")
+	info := usage.NewInfo()
 
 	if fmtc.Is256ColorsSupported() {
 		info.AppNameColorTag = colorTagApp
 	}
 
-	info.AddOption(OPT_LIST, "List downloaded artefacts in data directory")
+	info.AddCommand(CMD_DOWNLOAD, "Download and store artefacts", "dir", "?artefact")
+	info.AddCommand(CMD_LIST, "List artefacts", "dir/storage")
+	info.AddCommand(CMD_GET, "Download artefact", "storage", "name", "?version")
+	info.AddCommand(CMD_CLEANUP, "Remove outdated artefacts", "dir", "min-versions")
+
 	info.AddOption(OPT_SOURCES, "Path to YAML file with sources {s-}(default: artefacts.yml){!}", "file")
-	info.AddOption(OPT_NAME, "Artefact name to download", "name")
 	info.AddOption(OPT_TOKEN, "GitHub personal token", "token")
+	info.AddOption(OPT_INSTALL, "Install artefact to user binaries {s-}($HOME/.bin){!}")
 	info.AddOption(OPT_UNIT, "Run application in unit mode {s-}(no colors and animations){!}")
 	info.AddOption(OPT_NO_COLOR, "Disable colors in output")
 	info.AddOption(OPT_HELP, "Show this help message")
 	info.AddOption(OPT_VER, "Show version")
 
 	info.AddExample(
-		"data",
-		"Download artefacts to data directory",
+		"download data",
+		`Download artefacts to "data" directory`,
 	)
 
 	info.AddExample(
-		"-s ~/artefacts-all.yml data",
-		"Download artefacts from given file to data directory",
+		"download data --source ~/artefacts-all.yml",
+		`Download artefacts from given file to "data" directory`,
 	)
 
 	info.AddExample(
-		"-s ~/artefacts-all.yml -n shellcheck data",
-		"Download shellcheck artefacts from given file to data directory",
+		"download data --name shellcheck",
+		`Download shellcheck artefacts to data directory`,
+	)
+
+	info.AddExample(
+		"list data",
+		`List all artefacts in "data" directory`,
+	)
+
+	info.AddExample(
+		"list my.artefacts.storage",
+		`List all artefacts on remote storage`,
+	)
+
+	info.AddExample(
+		"cleanup data 10",
+		`Cleanup artefacts versions in "data" directory except the last 10`,
+	)
+
+	info.AddExample(
+		"get my.artefacts.storage myapp",
+		`Download the latest version of myapp files from remote storage`,
+	)
+
+	info.AddExample(
+		"get my.artefacts.storage myapp 1.0.0",
+		`Download myapp version 1.0.0 files from remote storage`,
 	)
 
 	return info

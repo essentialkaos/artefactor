@@ -3,7 +3,8 @@ Description=Start artefacts downloading
 
 [Service]
 Type=oneshot
-ExecStart=artefactor -u -s /srv/artefactor/artefacts.yml /srv/artefactor/data
+EnvironmentFile=/etc/sysconfig/artefactor
+ExecStart=artefactor download /srv/artefactor/data --unit --sources /srv/artefactor/artefacts.yml
 
 [Install]
 WantedBy=multi-user.target

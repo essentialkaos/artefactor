@@ -7,4 +7,4 @@ HOME=/srv/artefactor
 
 ################################################################################
 
-0 15 * * Sun root artefactor -u -s /srv/artefactor/artefacts.yml /srv/artefactor/ &> /dev/null
+0 15 * * Sun root artefactor download /srv/artefactor/data --unit --sources /srv/artefactor/artefacts.yml &> /dev/null
