@@ -38,52 +38,7 @@ bash <(curl -fsSL https://apps.kaos.st/get) artefactor
 
 ### Usage
 
-```
-Usage: artefactor {options} {command}
-
-Commands
-
-  download dir artefact       Download and store artefacts
-  list dir/storage            List artefacts
-  get storage name version    Download artefact
-  cleanup dir min-versions    Remove outdated artefacts
-
-Options
-
-  --sources, -s file    Path to YAML file with sources (default: artefacts.yml)
-  --token, -t token     GitHub personal token
-  --install, -I         Install artefact to user binaries ($HOME/.bin)
-  --unit, -u            Run application in unit mode (no colors and animations)
-  --no-color, -nc       Disable colors in output
-  --help, -h            Show this help message
-  --version, -v         Show version
-
-Examples
-
-  artefactor download data
-  Download artefacts to "data" directory
-
-  artefactor download data --source ~/artefacts-all.yml
-  Download artefacts from given file to "data" directory
-
-  artefactor download data --name shellcheck
-  Download shellcheck artefacts to data directory
-
-  artefactor list data
-  List all artefacts in "data" directory
-
-  artefactor list my.artefacts.storage
-  List all artefacts on remote storage
-
-  artefactor cleanup data 10
-  Cleanup artefacts versions in "data" directory except the last 10
-
-  artefactor get my.artefacts.storage myapp
-  Download the latest version of myapp files from remote storage
-
-  artefactor get my.artefacts.storage myapp 1.0.0
-  Download myapp version 1.0.0 files from remote storage
-```
+<img src=".github/images/usage.svg" />
 
 ### CI Status
 
