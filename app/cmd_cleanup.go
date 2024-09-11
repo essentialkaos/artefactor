@@ -18,7 +18,6 @@ import (
 	"github.com/essentialkaos/ek/v13/options"
 	"github.com/essentialkaos/ek/v13/spinner"
 	"github.com/essentialkaos/ek/v13/terminal"
-	"github.com/essentialkaos/ek/v13/terminal/input"
 
 	"github.com/essentialkaos/artefactor/data"
 )
@@ -59,16 +58,6 @@ func cmdCleanup(args options.Arguments) error {
 		return nil
 	}
 
-	ok, _ := input.ReadAnswer(
-		fmt.Sprintf("Remove old versions except the last %d?", keepVersions), "N",
-	)
-
-	if !ok {
-		return nil
-	}
-
-	fmtc.NewLine()
-
 	err = cleanupVersions(index, dataDir, keepVersions)
 
 	if err != nil {
@@ -98,18 +87,6 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 
 		versionNum += len(versions)
 	}
-
-	fmtc.NewLine()
-
-	ok, _ := input.ReadAnswer(
-		fmt.Sprintf("Remove these versions (%d)?", versionNum), "N",
-	)
-
-	if !ok {
-		return nil
-	}
-
-	fmtc.NewLine()
 
 	var currentVersion int
 

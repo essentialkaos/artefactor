@@ -11,7 +11,6 @@ require (
 require (
 	github.com/essentialkaos/depsy v1.3.0 // indirect
 	github.com/essentialkaos/ek/v12 v12.130.0 // indirect
-	github.com/essentialkaos/go-linenoise/v3 v3.6.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect

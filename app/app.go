@@ -20,7 +20,6 @@ import (
 	"github.com/essentialkaos/ek/v13/support"
 	"github.com/essentialkaos/ek/v13/support/deps"
 	"github.com/essentialkaos/ek/v13/terminal"
-	"github.com/essentialkaos/ek/v13/terminal/input"
 	"github.com/essentialkaos/ek/v13/terminal/tty"
 	"github.com/essentialkaos/ek/v13/timeutil"
 	"github.com/essentialkaos/ek/v13/tmp"
@@ -39,7 +38,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.5.2"
+	VER  = "0.6.0"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -150,11 +149,6 @@ func preConfigureUI() {
 	if !tty.IsTTY() {
 		fmtc.DisableColors = true
 	}
-
-	input.TitleColorTag = "{s}{&}"
-	input.Prompt = "{s}›{!} "
-	input.MaskSymbol = "•"
-	input.MaskSymbolColorTag = "{s-}"
 
 	switch {
 	case fmtc.Is256ColorsSupported():
