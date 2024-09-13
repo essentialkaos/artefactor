@@ -83,8 +83,8 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 	fmtc.NewLine()
 
 	for name, versions := range allVersions {
-		fmtc.Printf(" {s-}-{!} {*}%s{!}{s}:{!} ", name)
-		fmtc.Print(strings.Join(versions, "{s},{!} "))
+		fmtc.Printf(" {s-}•{!} {*}%s{!}{s}:{!} ", name)
+		fmtc.Print(strings.Join(versions, "{s-},{!} "))
 		fmtc.NewLine()
 
 		versionNum += len(versions)
@@ -113,6 +113,8 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 
 	spinner.Update("{s}[%d/%d]{!} Remove outdated versions", currentVersion, versionNum)
 	spinner.Done(true)
+
+	fmtc.NewLine()
 
 	return nil
 }
