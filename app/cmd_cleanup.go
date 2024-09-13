@@ -80,6 +80,8 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 		return nil
 	}
 
+	fmtc.NewLine()
+
 	for name, versions := range allVersions {
 		fmtc.Printf(" {s-}-{!} {*}%s{!}{s}:{!} ", name)
 		fmtc.Print(strings.Join(versions, "{s},{!} "))
@@ -87,6 +89,8 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 
 		versionNum += len(versions)
 	}
+
+	fmtc.NewLine()
 
 	var currentVersion int
 
