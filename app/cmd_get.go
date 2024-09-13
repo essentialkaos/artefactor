@@ -13,14 +13,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/essentialkaos/ek/v12/fmtc"
-	"github.com/essentialkaos/ek/v12/fsutil"
-	"github.com/essentialkaos/ek/v12/options"
-	"github.com/essentialkaos/ek/v12/path"
-	"github.com/essentialkaos/ek/v12/progress"
-	"github.com/essentialkaos/ek/v12/req"
-	"github.com/essentialkaos/ek/v12/system"
-	"github.com/essentialkaos/ek/v12/terminal"
+	"github.com/essentialkaos/ek/v13/fmtc"
+	"github.com/essentialkaos/ek/v13/fsutil"
+	"github.com/essentialkaos/ek/v13/options"
+	"github.com/essentialkaos/ek/v13/path"
+	"github.com/essentialkaos/ek/v13/progress"
+	"github.com/essentialkaos/ek/v13/req"
+	"github.com/essentialkaos/ek/v13/system"
+	"github.com/essentialkaos/ek/v13/terminal"
 
 	"github.com/essentialkaos/artefactor/data"
 )

@@ -13,12 +13,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/essentialkaos/ek/v12/fmtc"
-	"github.com/essentialkaos/ek/v12/mathutil"
-	"github.com/essentialkaos/ek/v12/options"
-	"github.com/essentialkaos/ek/v12/spinner"
-	"github.com/essentialkaos/ek/v12/terminal"
-	"github.com/essentialkaos/ek/v12/terminal/input"
+	"github.com/essentialkaos/ek/v13/fmtc"
+	"github.com/essentialkaos/ek/v13/mathutil"
+	"github.com/essentialkaos/ek/v13/options"
+	"github.com/essentialkaos/ek/v13/spinner"
+	"github.com/essentialkaos/ek/v13/terminal"
 
 	"github.com/essentialkaos/artefactor/data"
 )
@@ -59,16 +58,6 @@ func cmdCleanup(args options.Arguments) error {
 		return nil
 	}
 
-	ok, _ := input.ReadAnswer(
-		fmt.Sprintf("Remove old versions except the last %d?", keepVersions), "N",
-	)
-
-	if !ok {
-		return nil
-	}
-
-	fmtc.NewLine()
-
 	err = cleanupVersions(index, dataDir, keepVersions)
 
 	if err != nil {
@@ -91,22 +80,14 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 		return nil
 	}
 
+	fmtc.NewLine()
+
 	for name, versions := range allVersions {
-		fmtc.Printf(" {s-}-{!} {*}%s{!}{s}:{!} ", name)
-		fmtc.Print(strings.Join(versions, "{s},{!} "))
+		fmtc.Printf(" {s-}•{!} {*}%s{!}{s}:{!} ", name)
+		fmtc.Print(strings.Join(versions, "{s-},{!} "))
 		fmtc.NewLine()
 
 		versionNum += len(versions)
-	}
-
-	fmtc.NewLine()
-
-	ok, _ := input.ReadAnswer(
-		fmt.Sprintf("Remove these versions (%d)?", versionNum), "N",
-	)
-
-	if !ok {
-		return nil
 	}
 
 	fmtc.NewLine()
@@ -132,6 +113,8 @@ func cleanupVersions(index *data.Index, dataDir string, keepVersions int) error 
 
 	spinner.Update("{s}[%d/%d]{!} Remove outdated versions", currentVersion, versionNum)
 	spinner.Done(true)
+
+	fmtc.NewLine()
 
 	return nil
 }

@@ -35,6 +35,12 @@
   file: "duf"
   output: "duf-x86_64"
 
+- name: eza
+  repo: eza-community/eza
+  source: "eza_x86_64-unknown-linux-gnu.tar.gz"
+  file: "eza"
+  output: "eza-x86_64"
+
 - name: fzf
   repo: junegunn/fzf
   source: "*-linux_amd64.tar.gz"
