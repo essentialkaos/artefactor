@@ -76,7 +76,7 @@ func getArtefact(storage, name string, info *data.ArtefactVersion) error {
 		storage = "https://" + storage
 	}
 
-	fmtc.Printf("{*}Downloading files of {?primary}%s{!*}:%s{!}{*} artefact…{!}\n", name, info.Version)
+	fmtc.Printfn("{*}Downloading files of {?primary}%s{!*}:%s{!}{*} artefact…{!}", name, info.Version)
 
 	for _, file := range info.Files {
 		fileName := stripArchFromBinaryName(file)

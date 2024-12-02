@@ -79,7 +79,7 @@ func downloadArtefacts(artefacts data.Artefacts, dataDir, artefactName string) e
 		err := downloadArtefact(artefact, dataDir)
 
 		if err != nil {
-			fmtc.Printf("   {r}%v{!}\n", err)
+			fmtc.Printfn("   {r}%v{!}", err)
 			isFailed = true
 		}
 
@@ -98,8 +98,8 @@ func downloadArtefacts(artefacts data.Artefacts, dataDir, artefactName string) e
 
 // downloadArtefact downloads specified artefact
 func downloadArtefact(artefact *data.Artefact, dataDir string) error {
-	fmtc.Printf(
-		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}\n",
+	fmtc.Printfn(
+		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}",
 		artefact.Name, artefact.Repo,
 	)
 
@@ -111,8 +111,8 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 		return err
 	}
 
-	fmtc.Printf(
-		"   Found version: {g}%s{!} {s-}(%s){!}\n",
+	fmtc.Printfn(
+		"   Found version: {g}%s{!} {s-}(%s){!}",
 		version, timeutil.Format(pubDate, "%Y/%m/%d %H:%M"),
 	)
 
@@ -145,8 +145,8 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 
 	binarySize := fsutil.GetSize(outputFile)
 
-	fmtc.Printf(
-		"   {g}Artefact successfully downloaded (%s) and saved to data directory{!}\n",
+	fmtc.Printfn(
+		"   {g}Artefact successfully downloaded (%s) and saved to data directory{!}",
 		fmtutil.PrettySize(binarySize),
 	)
 
