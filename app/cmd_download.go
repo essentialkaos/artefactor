@@ -124,7 +124,7 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 	if fsutil.IsExist(outputFile) {
 		modDate, err := fsutil.GetMTime(outputFile)
 
-		if err != nil && modDate.Before(pubDate) {
+		if err == nil && modDate.After(pubDate) {
 			fmtc.Println("   {s}There is no update available for this application{!}")
 			return nil
 		}
