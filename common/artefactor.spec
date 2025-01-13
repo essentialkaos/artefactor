@@ -129,6 +129,7 @@ fi
 %changelog
 * Tue Jan 14 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.1-0
 - Fixed bug with creating symlink to the latest version for the version 'latest'
+- Redownload version if it has been updated on GitHub
 - Dependencies update
 
 * Wed Sep 11 2024 Anton Novojilov <andy@essentialkaos.com> - 0.6.0-0

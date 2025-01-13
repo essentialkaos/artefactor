@@ -119,12 +119,15 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 	artefact.ApplyVersion(version)
 
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
-	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 	outputFile := path.Join(releaseDir, artefact.Output)
 
 	if fsutil.IsExist(outputFile) {
-		fmtc.Println("   {s}There is no update available for this application{!}")
-		return nil
+		modDate, err := fsutil.GetMTime(outputFile)
+
+		if err != nil && modDate.Before(pubDate) {
+			fmtc.Println("   {s}There is no update available for this application{!}")
+			return nil
+		}
 	}
 
 	err = downloadArtefactData(artefact, version, releaseDir, outputFile)
@@ -132,6 +135,8 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 	if err != nil {
 		return err
 	}
+
+	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 
 	if !fsutil.IsExist(latestLink) || !fsutil.IsLink(latestLink) {
 		if fsutil.IsExist(latestLink) {
