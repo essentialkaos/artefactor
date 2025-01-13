@@ -138,11 +138,11 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 
 	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 
-	if !fsutil.IsExist(latestLink) || !fsutil.IsLink(latestLink) {
-		if fsutil.IsExist(latestLink) {
-			os.Remove(latestLink)
-		}
+	if fsutil.IsLink(latestLink) {
+		os.Remove(latestLink)
+	}
 
+	if !fsutil.IsExist(latestLink) {
 		err = os.Symlink(version, latestLink)
 
 		if err != nil {
