@@ -14,7 +14,7 @@
 
 Summary:        Utility for downloading artefacts from GitHub
 Name:           artefactor
-Version:        0.6.0
+Version:        0.6.1
 Release:        0%{?dist}
 Group:          Applications/System
 License:        Apache License, Version 2.0
@@ -26,7 +26,7 @@ Source100:      checksum.sha512
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  golang >= 1.21
+BuildRequires:  golang >= 1.22
 
 Provides:       %{name} = %{version}-%{release}
 
@@ -127,6 +127,10 @@ fi
 ################################################################################
 
 %changelog
+* Tue Jan 14 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.1-0
+- Fixed bug with creating symlink to the latest version for the version 'latest'
+- Dependencies update
+
 * Wed Sep 11 2024 Anton Novojilov <andy@essentialkaos.com> - 0.6.0-0
 - Migrate to v13 version of ek package
 - Code refactoring
