@@ -133,14 +133,16 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 		return err
 	}
 
-	if fsutil.IsExist(latestLink) {
-		os.Remove(latestLink)
-	}
+	if !fsutil.IsExist(latestLink) || !fsutil.IsLink(latestLink) {
+		if fsutil.IsExist(latestLink) {
+			os.Remove(latestLink)
+		}
 
-	err = os.Symlink(version, latestLink)
+		err = os.Symlink(version, latestLink)
 
-	if err != nil {
-		return fmt.Errorf("Can't create link to the latest release: %v", err)
+		if err != nil {
+			return fmt.Errorf("Can't create link to the latest release: %v", err)
+		}
 	}
 
 	binarySize := fsutil.GetSize(outputFile)
