@@ -2,7 +2,7 @@ package app
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                         Copyright (c) 2024 ESSENTIAL KAOS                          //
+//                         Copyright (c) 2025 ESSENTIAL KAOS                          //
 //      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -79,7 +79,7 @@ func downloadArtefacts(artefacts data.Artefacts, dataDir, artefactName string) e
 		err := downloadArtefact(artefact, dataDir)
 
 		if err != nil {
-			fmtc.Printf("   {r}%v{!}\n", err)
+			fmtc.Printfn("   {r}%v{!}", err)
 			isFailed = true
 		}
 
@@ -98,8 +98,8 @@ func downloadArtefacts(artefacts data.Artefacts, dataDir, artefactName string) e
 
 // downloadArtefact downloads specified artefact
 func downloadArtefact(artefact *data.Artefact, dataDir string) error {
-	fmtc.Printf(
-		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}\n",
+	fmtc.Printfn(
+		"{*}Downloading {c}%s{!}{*} from {s}%s{!}{*}…{!}",
 		artefact.Name, artefact.Repo,
 	)
 
@@ -111,20 +111,23 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 		return err
 	}
 
-	fmtc.Printf(
-		"   Found version: {g}%s{!} {s-}(%s){!}\n",
+	fmtc.Printfn(
+		"   Found version: {g}%s{!} {s-}(%s){!}",
 		version, timeutil.Format(pubDate, "%Y/%m/%d %H:%M"),
 	)
 
 	artefact.ApplyVersion(version)
 
 	releaseDir := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), version)
-	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
 	outputFile := path.Join(releaseDir, artefact.Output)
 
 	if fsutil.IsExist(outputFile) {
-		fmtc.Println("   {s}There is no update available for this application{!}")
-		return nil
+		modDate, err := fsutil.GetMTime(outputFile)
+
+		if err == nil && modDate.After(pubDate) {
+			fmtc.Println("   {s}There is no update available for this application{!}")
+			return nil
+		}
 	}
 
 	err = downloadArtefactData(artefact, version, releaseDir, outputFile)
@@ -133,20 +136,24 @@ func downloadArtefact(artefact *data.Artefact, dataDir string) error {
 		return err
 	}
 
-	if fsutil.IsExist(latestLink) {
+	latestLink := path.Join(dataDir, strutil.Q(artefact.Dir, artefact.Name), "latest")
+
+	if fsutil.IsLink(latestLink) {
 		os.Remove(latestLink)
 	}
 
-	err = os.Symlink(version, latestLink)
+	if !fsutil.IsExist(latestLink) {
+		err = os.Symlink(version, latestLink)
 
-	if err != nil {
-		return fmt.Errorf("Can't create link to the latest release: %v", err)
+		if err != nil {
+			return fmt.Errorf("Can't create link to the latest release: %v", err)
+		}
 	}
 
 	binarySize := fsutil.GetSize(outputFile)
 
-	fmtc.Printf(
-		"   {g}Artefact successfully downloaded (%s) and saved to data directory{!}\n",
+	fmtc.Printfn(
+		"   {g}Artefact successfully downloaded (%s) and saved to data directory{!}",
 		fmtutil.PrettySize(binarySize),
 	)
 

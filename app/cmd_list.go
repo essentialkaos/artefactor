@@ -2,7 +2,7 @@ package app
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                         Copyright (c) 2024 ESSENTIAL KAOS                          //
+//                         Copyright (c) 2025 ESSENTIAL KAOS                          //
 //      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -61,19 +61,19 @@ func cmdList(args options.Arguments) error {
 	for _, info := range index.Artefacts {
 		size := fmtutil.PrettyNum(len(info.Versions))
 
-		fmtc.Printf("{s-}┌{!}{*@} %s {!}{#240}{*@} %s {!}\n", info.Name, size)
-		fmtc.Printf("{s-}│{!}\n")
+		fmtc.Printfn("{s-}┌{!}{*@} %s {!}{#240}{*@} %s {!}", info.Name, size)
+		fmtc.Printfn("{s-}│{!}")
 
 		for i, version := range info.Versions {
 			if i+1 != len(info.Versions) {
-				fmtc.Printf(
-					"{s-}├{!} {s}%s{!} {s-}(%s){!}\n",
+				fmtc.Printfn(
+					"{s-}├{!} {s}%s{!} {s-}(%s){!}",
 					version.Version,
 					fmtutil.PrettySize(version.Size),
 				)
 			} else {
-				fmtc.Printf(
-					"{s-}└{!} {*}%s{!} {s-}(%s){!}\n",
+				fmtc.Printfn(
+					"{s-}└{!} {*}%s{!} {s-}(%s){!}",
 					version.Version,
 					fmtutil.PrettySize(version.Size),
 				)

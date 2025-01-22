@@ -2,7 +2,7 @@ package app
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                         Copyright (c) 2024 ESSENTIAL KAOS                          //
+//                         Copyright (c) 2025 ESSENTIAL KAOS                          //
 //      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -76,7 +76,7 @@ func getArtefact(storage, name string, info *data.ArtefactVersion) error {
 		storage = "https://" + storage
 	}
 
-	fmtc.Printf("{*}Downloading files of {?primary}%s{!*}:%s{!}{*} artefact…{!}\n", name, info.Version)
+	fmtc.Printfn("{*}Downloading files of {?primary}%s{!*}:%s{!}{*} artefact…{!}", name, info.Version)
 
 	for _, file := range info.Files {
 		fileName := stripArchFromBinaryName(file)

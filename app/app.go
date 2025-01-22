@@ -2,7 +2,7 @@ package app
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                         Copyright (c) 2024 ESSENTIAL KAOS                          //
+//                         Copyright (c) 2025 ESSENTIAL KAOS                          //
 //      Apache License, Version 2.0 <https://www.apache.org/licenses/LICENSE-2.0>     //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -38,7 +38,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.6.0"
+	VER  = "0.6.1"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 
@@ -99,7 +99,7 @@ func Run(gitRev string, gomod []byte) {
 
 	if !errs.IsEmpty() {
 		terminal.Error("Options parsing errors:")
-		terminal.Error(errs.String())
+		terminal.Error(errs.Error(" - "))
 		os.Exit(1)
 	}
 
@@ -153,10 +153,10 @@ func preConfigureUI() {
 	switch {
 	case fmtc.Is256ColorsSupported():
 		colorTagApp, colorTagVer = "{*}{#117}", "{#117}"
-		fmtc.NameColor("primary", "{#117}")
+		fmtc.AddColor("primary", "{#117}")
 	default:
 		colorTagApp, colorTagVer = "{*}{c}", "{c}"
-		fmtc.NameColor("primary", "{c}")
+		fmtc.AddColor("primary", "{c}")
 	}
 }
 
