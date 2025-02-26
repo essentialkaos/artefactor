@@ -21,7 +21,7 @@
 
 #### From source
 
-To build the `artefactor` from scratch, make sure you have a working Go 1.21+ workspace (_[instructions](https://go.dev/doc/install)_), then:
+To build the `artefactor` from scratch, make sure you have a working Go 1.23+ workspace (_[instructions](https://go.dev/doc/install)_), then:
 
 ```bash
 go install github.com/essentialkaos/artefactor@latest
