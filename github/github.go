@@ -56,15 +56,18 @@ var cache = map[string]*Release{}
 
 // GetLimits returns info about limits
 func GetLimits() (Limits, error) {
+	var auth req.Auth
+
 	headers := req.Headers{"X-GitHub-Api-Version": API_VERSION}
 
 	if Token != "" {
-		headers["Authorization"] = "Bearer " + Token
+		auth = req.AuthBearer{Token}
 	}
 
 	resp, err := req.Request{
 		URL:         "https://api.github.com/octocat",
 		Headers:     headers,
+		Auth:        auth,
 		AutoDiscard: true,
 	}.Get()
 

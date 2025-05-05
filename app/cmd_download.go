@@ -219,7 +219,7 @@ func downloadArtefactFile(artefact *data.Artefact, version string) (string, erro
 	}
 
 	w := bufio.NewWriter(tempFd)
-	_, err = io.Copy(w, resp.Response.Body)
+	_, err = io.Copy(w, resp.Body)
 
 	if err != nil {
 		return "", err

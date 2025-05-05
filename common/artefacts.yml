@@ -7,7 +7,7 @@
 
 - name: typos
   repo: crate-ci/typos
-  source: "*-linux-musl.tar.gz"
+  source: "*-x86_64-unknown-linux-musl.tar.gz"
   file: "typos"
   output: "typos-x86_64"
 
@@ -91,3 +91,32 @@
   source: "https://downloads.dockerslim.com/releases/{version}/dist_linux.tar.gz"
   file: "dist_linux/slim-sensor"
   output: "slim-sensor-x86_64"
+
+- name: registry
+  repo: distribution/distribution
+  source: "registry_{version}_linux_amd64.tar.gz"
+  file: "registry"
+  output: "registry-x86_64"
+
+- name: helm
+  repo: helm/helm
+  source: "https://get.helm.sh/helm-v{version}-linux-amd64.tar.gz"
+  file: "linux-amd64/helm"
+  output: "helm-x86_64"
+
+- name: syncthing
+  repo: syncthing/syncthing
+  source: "syncthing-linux-amd64-v{version}.tar.gz"
+  file: "syncthing-linux-amd64-v{version}/syncthing"
+  output: "syncthing-x86_64"
+
+- name: syncthing-win
+  repo: Bill-Stewart/SyncthingWindowsSetup
+  source: "syncthing-windows-setup.exe"
+  output: "syncthing.exe"
+
+- name: ffmpeg
+  repo: BtbN/FFmpeg-Builds
+  source: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz"
+  file: "ffmpeg-n7.1-latest-linux64-gpl-7.1/bin/ffmpeg"
+  output: "ffmpeg-x86_64"
