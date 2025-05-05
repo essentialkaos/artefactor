@@ -2,8 +2,6 @@ module github.com/essentialkaos/artefactor
 
 go 1.23.6
 
-toolchain go1.24.1
-
 require (
 	github.com/essentialkaos/ek/v13 v13.25.0
 	github.com/essentialkaos/go-simpleyaml/v2 v2.1.5
@@ -15,6 +13,6 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
