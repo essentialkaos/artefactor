@@ -127,7 +127,7 @@ fi
 ################################################################################
 
 %changelog
-* Tue Apr 01 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.2-0
+* Tue May 06 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.2-0
 - Code refactoring
 - Dependencies update
 
