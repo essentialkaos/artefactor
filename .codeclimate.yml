@@ -1,6 +1,0 @@
-engines:
-  golint:
-    enabled: true
-    checks:
-      GoLint/Naming/MixedCaps:
-        enabled: false
