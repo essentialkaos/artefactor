@@ -4,8 +4,8 @@ github.com/essentialkaos/depsy v1.3.1 h1:00k9QcMsdPM4IzDaEFHsTHBD/zoM0oxtB5+dMUw
 github.com/essentialkaos/depsy v1.3.1/go.mod h1:B5+7Jhv2a2RacOAxIKU2OeJp9QfZjwIpEEPI5X7auWM=
 github.com/essentialkaos/ek/v13 v13.25.0 h1:iM3BO+Y9Zcv0SvYNTa0e5XxHH46wlzD3hksJ4XzDbAY=
 github.com/essentialkaos/ek/v13 v13.25.0/go.mod h1:uYJ9Vm/WnccKtCbamJ0ukMWQcANX55e742y8lS3gP+Y=
-github.com/essentialkaos/go-simpleyaml/v2 v2.1.5 h1:HrFk4JhgBT5pzEkwFW4MqdgsAW4KN7/Um6rTHq1GTJk=
-github.com/essentialkaos/go-simpleyaml/v2 v2.1.5/go.mod h1:m3Ub1npzYSZTgSzW68wUT1ak7p9hOSFvTnyhtwKlvSA=
+github.com/essentialkaos/go-simpleyaml/v2 v2.1.6 h1:FcuHJoH01UJ4fWi4d9R4ilWWXX/lIzxyJv+WXwLfUWE=
+github.com/essentialkaos/go-simpleyaml/v2 v2.1.6/go.mod h1:6sBtV58kLTnKBteKquvwOIty/fTIgpqaACkcanILcsw=
 github.com/essentialkaos/npck v1.7.1 h1:AqXXeR6E8cYh/Rd8HHof85uGNSpsDJPD0Y9/HJdoIps=
 github.com/essentialkaos/npck v1.7.1/go.mod h1:wkYE9tnteBI5U1fJV6bV/tTWYSdAaJBidMSETJKEMkE=
 github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=
