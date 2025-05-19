@@ -14,7 +14,7 @@
 
 Summary:        Utility for downloading artefacts from GitHub
 Name:           artefactor
-Version:        0.6.2
+Version:        0.6.3
 Release:        0%{?dist}
 Group:          Applications/System
 License:        Apache License, Version 2.0
@@ -127,6 +127,9 @@ fi
 ################################################################################
 
 %changelog
+* Mon May 19 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.3-0
+- Dependencies update
+
 * Tue May 06 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.2-0
 - Code refactoring
 - Dependencies update
