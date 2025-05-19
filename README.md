@@ -14,7 +14,7 @@
 
 ### Usage demo
 
-[![demo](https://gh.kaos.st/artefactor-020.gif)](#usage-demo)
+[![demo](https://github.com/user-attachments/assets/2e4c3103-cd90-4dd3-8c4a-9edf5de51704)](#usage-demo)
 
 ### Installation
 
