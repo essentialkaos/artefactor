@@ -279,7 +279,10 @@ func getArtefactBinaryURL(artefact *data.Artefact) (string, error) {
 
 	for _, url := range assets {
 		file := path.Base(url)
-		match, _ := path.Match(artefact.Source, file)
+		match, _ := path.Match(
+			strings.ToLower(artefact.Source),
+			strings.ToLower(file),
+		)
 
 		if match {
 			return url, nil

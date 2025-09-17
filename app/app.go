@@ -38,7 +38,7 @@ import (
 // Basic application info
 const (
 	APP  = "artefactor"
-	VER  = "0.6.3"
+	VER  = "0.6.4"
 	DESC = "Utility for downloading artefacts from GitHub"
 )
 

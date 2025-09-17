@@ -1,5 +1,10 @@
 --- # Basic artefacts collection
 
+- name: yt-dlp
+  repo: yt-dlp/yt-dlp
+  source: "yt-dlp_linux"
+  output: "yt-dlp-x86_64"
+
 - name: gosu
   repo: tianon/gosu
   source: "*-amd64"
@@ -66,7 +71,7 @@
 
 - name: hadolint
   repo: hadolint/hadolint
-  source: "*-Linux-x86_64"
+  source: "*-linux-x86_64"
   output: "hadolint-x86_64"
 
 - name: grype
