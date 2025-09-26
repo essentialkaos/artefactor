@@ -148,7 +148,7 @@ func GetLatestReleaseInfo(repo string) (*Release, error) {
 			"Reached limit for requests to GitHub API (%s/%s | %s to reset)",
 			resp.Header.Get("X-Ratelimit-Used"),
 			resp.Header.Get("X-Ratelimit-Limit"),
-			timeutil.PrettyDuration(time.Until(resetDate)),
+			timeutil.Pretty(time.Until(resetDate)),
 		)
 	}
 
