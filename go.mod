@@ -3,7 +3,7 @@ module github.com/essentialkaos/artefactor
 go 1.24.6
 
 require (
-	github.com/essentialkaos/ek/v13 v13.38.4
+	github.com/essentialkaos/ek/v13 v13.38.7
 	github.com/essentialkaos/go-simpleyaml/v2 v2.2.0
 	github.com/essentialkaos/npck v1.7.5
 )
@@ -14,5 +14,5 @@ require (
 	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.25 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 )
