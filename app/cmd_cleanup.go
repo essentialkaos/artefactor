@@ -13,11 +13,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/essentialkaos/ek/v13/fmtc"
-	"github.com/essentialkaos/ek/v13/mathutil"
-	"github.com/essentialkaos/ek/v13/options"
-	"github.com/essentialkaos/ek/v13/spinner"
-	"github.com/essentialkaos/ek/v13/terminal"
+	"github.com/essentialkaos/ek/v14/fmtc"
+	"github.com/essentialkaos/ek/v14/options"
+	"github.com/essentialkaos/ek/v14/spinner"
+	"github.com/essentialkaos/ek/v14/terminal"
 
 	"github.com/essentialkaos/artefactor/data"
 )
@@ -46,7 +45,7 @@ func cmdCleanup(args options.Arguments) error {
 		}
 	}
 
-	keepVersions = mathutil.Max(keepVersions, MIN_VERSIONS)
+	keepVersions = max(keepVersions, MIN_VERSIONS)
 
 	dataDir := args.Get(0).Clean().String()
 	index, err := readLocalIndex(dataDir)
