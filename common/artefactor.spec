@@ -14,7 +14,7 @@
 
 Summary:        Utility for downloading artefacts from GitHub
 Name:           artefactor
-Version:        0.6.4
+Version:        0.7.0
 Release:        0%{?dist}
 Group:          Applications/System
 License:        Apache License, Version 2.0
@@ -26,7 +26,7 @@ Source100:      checksum.sha512
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  golang >= 1.24
+BuildRequires:  golang >= 1.25
 
 Provides:       %{name} = %{version}-%{release}
 
@@ -127,6 +127,10 @@ fi
 ################################################################################
 
 %changelog
+* Tue May 05 2026 Anton Novojilov <andy@essentialkaos.com> - 0.7.0-0
+- Migrated to ek.v14
+- Dependencies update
+
 * Wed Sep 17 2025 Anton Novojilov <andy@essentialkaos.com> - 0.6.4-0
 - Source matching is now case-insensitive
 - Code refactoring
